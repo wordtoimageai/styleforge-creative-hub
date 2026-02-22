@@ -1,16 +1,18 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Download, Share2, ArrowLeft, Upload, Loader2,
+  Download, Share2, ArrowLeft, Loader2,
   Moon, Sun, Shirt, PartyPopper, Briefcase, Heart, Snowflake,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import type { Language } from "@/lib/i18n";
 import type { AppMode } from "@/lib/app-state";
+import type { OutfitLayer, WardrobeItem } from "@/lib/wardrobe-types";
 import { t } from "@/lib/i18n";
 import { generateImage } from "@/lib/ai-client";
 import { toast } from "sonner";
+import WardrobeSheet from "@/components/WardrobeSheet";
+import OutfitStack from "@/components/OutfitStack";
 
 interface StudioPageProps {
   lang: Language;
@@ -37,7 +39,10 @@ export default function StudioPage({
 }: StudioPageProps) {
   const navigate = useNavigate();
   const [isProcessing, setProcessing] = useState(false);
-
+  const [wardrobeOpen, setWardrobeOpen] = useState(false);
+  const [outfitLayers, setOutfitLayers] = useState<OutfitLayer[]>([
+    { garment: null },
+  ]);
   const handleStyleSelect = useCallback(async (styleKey: string) => {
     if (!userPhoto) return;
     setProcessing(true);
@@ -60,33 +65,40 @@ export default function StudioPage({
     }
   }, [userPhoto, onGenerated, onAddHistory]);
 
-  const handleGarmentUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !userPhoto) return;
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const garmentBase64 = reader.result as string;
-      setProcessing(true);
-      try {
-        const result = await generateImage({
-          mode: "tryon",
-          userPhoto,
-          garmentPhoto: garmentBase64,
-        });
-        if (result.error) {
-          toast.error(result.error);
-        } else {
-          onGenerated(result.image);
-          onAddHistory(result.image);
-        }
-      } catch {
-        toast.error("Failed to process try-on");
-      } finally {
-        setProcessing(false);
+  const handleGarmentSelect = useCallback(async (garmentBase64: string, item: WardrobeItem) => {
+    if (!userPhoto) return;
+    setProcessing(true);
+    try {
+      const result = await generateImage({
+        mode: "tryon",
+        userPhoto,
+        garmentPhoto: garmentBase64,
+      });
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        onGenerated(result.image);
+        onAddHistory(result.image);
+        setOutfitLayers(prev => [...prev, { garment: item, resultImage: result.image }]);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      toast.error("Failed to process try-on");
+    } finally {
+      setProcessing(false);
+    }
   }, [userPhoto, onGenerated, onAddHistory]);
+
+  const handleRemoveLastGarment = useCallback(() => {
+    setOutfitLayers(prev => {
+      if (prev.length <= 1) return prev;
+      const newLayers = prev.slice(0, -1);
+      const lastLayer = newLayers[newLayers.length - 1];
+      if (lastLayer?.resultImage) {
+        onGenerated(lastLayer.resultImage);
+      }
+      return newLayers;
+    });
+  }, [onGenerated]);
 
   const handleDownload = useCallback(() => {
     if (!generatedImage) return;
@@ -204,18 +216,22 @@ export default function StudioPage({
           {/* Side panel / Bottom sheet on mobile */}
           <div className="w-full lg:w-80 glass-card p-5">
             {mode === "tryon" ? (
-              <div className="space-y-4">
-                <h3 className={`font-heading font-semibold text-foreground ${lang === "bn" ? "font-bengali" : ""}`}>
-                  {t(lang, "studio.tryOnMode")}
-                </h3>
-                <label className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border/50 rounded-xl cursor-pointer hover:border-primary/50 transition-colors">
-                  <input type="file" accept="image/*" onChange={handleGarmentUpload} className="hidden" />
-                  <Upload className="h-8 w-8 text-primary" />
-                  <span className={`text-sm text-muted-foreground ${lang === "bn" ? "font-bengali" : ""}`}>
-                    {t(lang, "studio.uploadGarment")}
-                  </span>
-                </label>
-              </div>
+              <>
+                <OutfitStack
+                  outfitHistory={outfitLayers}
+                  onRemoveLastGarment={handleRemoveLastGarment}
+                  onAddGarment={() => setWardrobeOpen(true)}
+                  lang={lang}
+                />
+                <WardrobeSheet
+                  open={wardrobeOpen}
+                  onOpenChange={setWardrobeOpen}
+                  onGarmentSelect={handleGarmentSelect}
+                  activeGarmentIds={outfitLayers.filter(l => l.garment).map(l => l.garment!.id)}
+                  isLoading={isProcessing}
+                  lang={lang}
+                />
+              </>
             ) : (
               <div className="space-y-4">
                 <h3 className={`font-heading font-semibold text-foreground ${lang === "bn" ? "font-bengali" : ""}`}>
