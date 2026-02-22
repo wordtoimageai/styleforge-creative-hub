@@ -1,76 +1,57 @@
 
 
-# BDai.studio — Full Ecosystem Build Plan
+# Integrate Brand Partnership Wardrobe into BDai.studio
 
-## Overview
-A production-ready AI fashion platform for Bangladesh, featuring Virtual Try-On and AI Style Generation. Mobile-first design with Bengali/English support, powered by Lovable Cloud and Lovable AI.
+## What This Adds
+The uploaded files introduce a **Brand Partnership system** — a curated wardrobe of sponsored garments (Aarong Eid 2026 collection) with pricing, discount badges, and "Buy Now" CTAs. This transforms the Try-On mode from a simple file upload into a shoppable experience.
 
----
+## New Features
+- **Wardrobe catalog** with Eid Collection and regular items, category filters, and brand banners
+- **Outfit Stack** panel showing layered garments with brand badges and purchase cards for sponsored items
+- **Buy Now flow** with BDT pricing, discount percentages, and affiliate tracking links
+- **Custom upload** tab alongside the curated wardrobe
 
-## Page 1: Home / Landing Page
-- **Hero section** with animated gradient background, BDai.studio branding
-- Bengali/English language toggle in the navbar
-- Two primary CTAs: "Upload Photo" and mode selectors (Try On / AI Style)
-- Feature highlights: Gemini AI, 30-second results, Made in BD, Privacy-first
-- Ecosystem footer linking to startbd.com, bdai.ai, bdai.dev
-- Responsive: stacks vertically on mobile, expands on desktop
+## Files to Create
 
-## Page 2: Upload Screen
-- Drag-and-drop or tap-to-upload photo area (3:4 aspect ratio guide)
-- Mode indicator badge (Try On vs Style mode)
-- Back navigation to home
-- File validation and error display
-- Privacy notice ("Photos are never stored")
+### 1. `src/lib/wardrobe-types.ts`
+- Adapted from the uploaded `types.ts`
+- Contains `WardrobeItem`, `OutfitLayer`, and `SavedOutfit` interfaces
+- Adds brand partnership fields (brand, brandLogo, price, buyUrl, category, isSponsored, discount, eidCollection)
 
-## Page 3: Processing Screen
-- Circular user photo preview with animated spinner overlay
-- Pulsing loading message in selected language
-- "This may take up to 30 seconds" notice
-- AI model generation happens here via Lovable Cloud edge function
+### 2. `src/lib/wardrobe-data.ts`
+- Adapted from the uploaded `wardrobe.ts`
+- Contains `defaultWardrobe` array with Aarong Eid 2026 placeholder items and generic items
+- Utility functions: `getBrandWardrobe()`, `getEidCollection()`, `getByBrand()`
 
-## Page 4: Studio Screen (Main Workspace)
-- **Canvas area**: Displays generated model/result image with fade-in animation
-- **Loading overlay** with spinner during AI processing
-- **Mode toggle**: Switch between Try On and Style modes
-- **Try On mode sidebar**: Upload garment image, view try-on history grid
-- **Style mode sidebar**: 6 preset style buttons (Eid Special, Casual, Formal, Wedding, Summer, Winter) with icons, history grid
-- **Action bar**: Download with BDai.studio watermark, share to Facebook/WhatsApp
-- **Mobile layout**: Bottom sheet panel instead of side panel
+### 3. `src/components/WardrobeSheet.tsx`
+- Adapted from `WardrobeSheet.tsx` — restyled to match BDai.studio dark theme using Tailwind + shadcn
+- Uses `Dialog` from shadcn instead of `framer-motion` (no new dependency needed)
+- Three tabs: Eid Collection (with category filter chips), All Items, Upload
+- Garment cards show discount badges, brand labels, BDT prices
+- Clicking a garment fetches the image URL, converts to base64, and triggers the AI try-on via existing `generateImage()` flow
 
-## Page 5: StyleVu Landing Page
-- Marketing page for the B2B platform side
-- Hero with BD pricing and Ramadan offer section
-- Features showcase, pricing tiers, brand testimonials
-- CTA to brand onboarding
+### 4. `src/components/OutfitStack.tsx`
+- Adapted from `OutfitStack.tsx` — restyled for dark theme
+- Shows numbered outfit layers with thumbnails and brand badges
+- Sponsored item purchase cards with brand logo, discounted price, and "Buy Now" button
+- "Add Garment" button opens the WardrobeSheet
 
-## Page 6: Brand Onboarding Form
-- Multi-section form for brands to configure their white-label setup
-- Brand info, color scheme, product catalog inputs
-- Generates config preview
-- Bengali language support
+## Files to Modify
 
-## Page 7: Ecosystem Architecture
-- Visual brand architecture map showing startbd.com → bdai.ai / bdai.dev / bdai.studio
-- Tech stack overview, domain strategy, brand guide (colors, typography)
-- Revenue model and deployment roadmap
+### 5. `src/pages/StudioPage.tsx`
+- Replace the simple file upload in Try-On mode with the new WardrobeSheet + OutfitStack
+- Add state for `outfitLayers` (array of `OutfitLayer`) and `wardrobeOpen` flag
+- When a garment is selected from the wardrobe, call `generateImage({ mode: "tryon", ... })` and push result to outfit stack
+- Side panel shows OutfitStack (with layers + buy cards) instead of the plain upload label
+- "Add Garment" button in OutfitStack opens WardrobeSheet dialog
 
----
+### 6. `src/lib/i18n.ts`
+- Add new translation keys for wardrobe UI: `studio.wardrobe`, `studio.outfitStack`, `studio.addGarment`, `studio.buyNow`, `studio.eidCollection`
 
-## Backend (Lovable Cloud)
-
-### Edge Function: AI Image Generation
-- Proxies requests to Lovable AI Gateway using Gemini image generation model
-- Three prompt endpoints: Model Generation, Virtual Try-On (2 images), Style Generation
-- Handles base64 image input/output
-- Rate limit (429) and payment (402) error handling with user-friendly messages
-
----
-
-## Design System
-- **Dark theme**: Background #0A0A0F, surfaces with subtle transparency
-- **Brand colors**: Green #00DC82, Blue #0096FF, Orange #FF9500
-- **Typography**: Syne (headings), Outfit (body) — loaded via Google Fonts
-- **Bengali support**: Noto Sans Bengali for বাংলা text
-- **Animations**: Slide-up entrances, floating background gradients, glow effects
-- **Mobile-first**: All screens optimized for phone, responsive up to desktop
+## Technical Notes
+- No new npm dependencies needed — uses existing shadcn Dialog, Tabs, and Badge components plus Lucide icons
+- The `framer-motion` dependency from the original WardrobeSheet is replaced with CSS animations and shadcn Dialog for the modal
+- All styling converted from light/white theme classes to the app's dark glass-card theme
+- Garment images are fetched from URL, converted to base64 via FileReader, then sent through the existing `generateImage()` edge function
+- The wardrobe data is static/client-side for now (can be moved to database later for brand dashboard management)
 
