@@ -1,3 +1,4 @@
+import React, { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { MessageCircle } from "lucide-react";
 import type { Language } from "@/lib/i18n";
@@ -7,9 +8,9 @@ interface FooterProps {
   lang: Language;
 }
 
-export function Footer({ lang }: FooterProps) {
+export const Footer = forwardRef<HTMLElement, FooterProps>(function Footer({ lang }, ref) {
   return (
-    <footer className="border-t border-border/30 py-8 px-4">
+    <footer ref={ref} className="border-t border-border/30 py-8 px-4">
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -52,4 +53,4 @@ export function Footer({ lang }: FooterProps) {
       </div>
     </footer>
   );
-}
+});
