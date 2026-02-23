@@ -1,6 +1,6 @@
 import React, { forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, Camera, Sparkles, Shield, Zap, MapPin, Globe, Layers, Shirt, Wand2 } from "lucide-react";
+import { Camera, Sparkles, Shield, Zap, MapPin, Globe, Layers, Shirt, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { Language } from "@/lib/i18n";
