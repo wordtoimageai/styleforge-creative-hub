@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Download, Share2, ArrowLeft, Loader2,
   Moon, Sun, Shirt, PartyPopper, Briefcase, Heart, Snowflake,
+  ImageIcon, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Language } from "@/lib/i18n";
@@ -34,75 +35,73 @@ const stylePresets = [
   { key: "winter", icon: Snowflake },
 ] as const;
 
+const LOADING_MESSAGES = [
+  "Analyzing your photo…",
+  "Generating your style…",
+  "Applying AI magic…",
+  "Almost there…",
+];
+
 export default function StudioPage({
   lang, mode, onSetMode, userPhoto, generatedImage, onGenerated, history, onAddHistory,
 }: StudioPageProps) {
   const navigate = useNavigate();
   const [isProcessing, setProcessing] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
   const [wardrobeOpen, setWardrobeOpen] = useState(false);
   const [outfitLayers, setOutfitLayers] = useState<OutfitLayer[]>([
     { garment: null },
   ]);
+
+  const startProcessing = useCallback(() => {
+    setProcessing(true);
+    setLoadingStep(0);
+    let step = 0;
+    const interval = setInterval(() => {
+      step = Math.min(step + 1, LOADING_MESSAGES.length - 1);
+      setLoadingStep(step);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleStyleSelect = useCallback(async (styleKey: string) => {
     if (!userPhoto) return;
-    setProcessing(true);
+    const cleanup = startProcessing();
     try {
-      const result = await generateImage({
-        mode: "style",
-        userPhoto,
-        stylePreset: styleKey,
-      });
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        onGenerated(result.image);
-        onAddHistory(result.image);
-      }
-    } catch {
-      toast.error("Failed to generate style");
-    } finally {
-      setProcessing(false);
-    }
-  }, [userPhoto, onGenerated, onAddHistory]);
+      const result = await generateImage({ mode: "style", userPhoto, stylePreset: styleKey });
+      if (result.error) toast.error(result.error);
+      else { onGenerated(result.image); onAddHistory(result.image); }
+    } catch { toast.error("Failed to generate style"); }
+    finally { cleanup(); setProcessing(false); }
+  }, [userPhoto, onGenerated, onAddHistory, startProcessing]);
 
   const handleGarmentSelect = useCallback(async (garmentBase64: string, item: WardrobeItem) => {
     if (!userPhoto) return;
-    setProcessing(true);
+    const cleanup = startProcessing();
     try {
-      const result = await generateImage({
-        mode: "tryon",
-        userPhoto,
-        garmentPhoto: garmentBase64,
-      });
-      if (result.error) {
-        toast.error(result.error);
-      } else {
+      const result = await generateImage({ mode: "tryon", userPhoto, garmentPhoto: garmentBase64 });
+      if (result.error) toast.error(result.error);
+      else {
         onGenerated(result.image);
         onAddHistory(result.image);
         setOutfitLayers(prev => [...prev, { garment: item, resultImage: result.image }]);
       }
-    } catch {
-      toast.error("Failed to process try-on");
-    } finally {
-      setProcessing(false);
-    }
-  }, [userPhoto, onGenerated, onAddHistory]);
+    } catch { toast.error("Failed to process try-on"); }
+    finally { cleanup(); setProcessing(false); }
+  }, [userPhoto, onGenerated, onAddHistory, startProcessing]);
 
   const handleRemoveLastGarment = useCallback(() => {
     setOutfitLayers(prev => {
       if (prev.length <= 1) return prev;
       const newLayers = prev.slice(0, -1);
       const lastLayer = newLayers[newLayers.length - 1];
-      if (lastLayer?.resultImage) {
-        onGenerated(lastLayer.resultImage);
-      }
+      if (lastLayer?.resultImage) onGenerated(lastLayer.resultImage);
       return newLayers;
     });
   }, [onGenerated]);
 
   const handleDownload = useCallback(() => {
     if (!generatedImage) return;
-    // Create canvas with watermark
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement("canvas");
@@ -129,9 +128,7 @@ export default function StudioPage({
         const blob = await fetch(generatedImage).then(r => r.blob());
         const file = new File([blob], "bdai-studio.png", { type: "image/png" });
         await navigator.share({ title: "BDai.studio", files: [file] });
-      } catch {
-        toast.info("Share cancelled");
-      }
+      } catch { toast.info("Share cancelled"); }
     } else {
       navigator.clipboard.writeText(window.location.href);
       toast.success("Link copied!");
@@ -148,29 +145,29 @@ export default function StudioPage({
       <div className="container mx-auto max-w-6xl">
         {/* Top bar */}
         <div className="flex items-center justify-between mb-6">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-2 text-muted-foreground">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
             {t(lang, "nav.home")}
           </Button>
 
           {/* Mode toggle */}
-          <div className="flex gap-2">
+          <div className="flex gap-1 p-1 rounded-xl bg-muted/50 border border-border/50">
             <Button
               size="sm"
-              variant={mode === "tryon" ? "default" : "outline"}
+              variant="ghost"
               onClick={() => onSetMode("tryon")}
-              className={mode === "tryon" ? "bg-primary text-primary-foreground" : ""}
+              className={`rounded-lg transition-all ${mode === "tryon" ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 hover:bg-primary/90" : "text-muted-foreground hover:text-foreground"}`}
             >
-              <Shirt className="h-4 w-4 mr-1" />
+              <Shirt className="h-4 w-4 mr-1.5" />
               {t(lang, "studio.tryOnMode")}
             </Button>
             <Button
               size="sm"
-              variant={mode === "style" ? "default" : "outline"}
+              variant="ghost"
               onClick={() => onSetMode("style")}
-              className={mode === "style" ? "bg-secondary text-secondary-foreground" : ""}
+              className={`rounded-lg transition-all ${mode === "style" ? "bg-secondary text-secondary-foreground shadow-md shadow-secondary/25 hover:bg-secondary/90" : "text-muted-foreground hover:text-foreground"}`}
             >
-              <Moon className="h-4 w-4 mr-1" />
+              <Sparkles className="h-4 w-4 mr-1.5" />
               {t(lang, "studio.styleMode")}
             </Button>
           </div>
@@ -180,40 +177,103 @@ export default function StudioPage({
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Canvas area */}
           <div className="flex-1">
-            <div className="glass-card overflow-hidden relative" style={{ aspectRatio: "3/4" }}>
+            <div className="relative rounded-2xl overflow-hidden border border-border/50 bg-card/40 backdrop-blur-sm" style={{ aspectRatio: "3/4" }}>
+              {/* Dot grid background for empty/base state */}
+              {!generatedImage && !isProcessing && (
+                <div className="absolute inset-0 dot-grid opacity-30" />
+              )}
+
+              {/* Processing overlay */}
               {isProcessing && (
-                <div className="absolute inset-0 z-10 bg-background/80 flex items-center justify-center">
-                  <div className="text-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">{t(lang, "processing.generating")}</p>
+                <div className="absolute inset-0 z-10 flex items-center justify-center">
+                  {/* Animated gradient background */}
+                  <div className="absolute inset-0 bg-background/85 backdrop-blur-sm" />
+                  <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute inset-0 opacity-20 animate-pulse" style={{
+                      background: `linear-gradient(135deg, hsl(var(--brand-green) / 0.3), hsl(var(--brand-blue) / 0.2), hsl(var(--brand-orange) / 0.1))`,
+                    }} />
+                    {/* Shimmer sweep */}
+                    <div className="absolute inset-0 studio-shimmer" />
+                  </div>
+                  <div className="relative text-center space-y-4">
+                    <div className="relative mx-auto w-16 h-16">
+                      <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
+                      <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
+                      <Sparkles className="absolute inset-0 m-auto h-6 w-6 text-primary pulse-glow" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground animate-fade-in">{LOADING_MESSAGES[loadingStep]}</p>
+                      <div className="flex justify-center gap-1 mt-3">
+                        {LOADING_MESSAGES.map((_, i) => (
+                          <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i <= loadingStep ? "w-6 bg-primary" : "w-2 bg-muted-foreground/30"}`} />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
+
+              {/* Image content */}
               {generatedImage ? (
                 <img src={generatedImage} alt="Generated result" className="w-full h-full object-cover animate-fade-in" />
               ) : userPhoto ? (
-                <img src={userPhoto} alt="Your photo" className="w-full h-full object-cover opacity-50" />
+                <div className="relative w-full h-full">
+                  <img src={userPhoto} alt="Your photo" className="w-full h-full object-cover opacity-40" />
+                  {!isProcessing && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center space-y-3 p-6">
+                        <div className="w-14 h-14 rounded-2xl bg-muted/60 border border-border/50 flex items-center justify-center mx-auto">
+                          <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        <p className="text-sm text-muted-foreground font-medium">
+                          {mode === "tryon" ? "Select a garment to try on" : "Choose a style preset"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                  No image
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="text-center space-y-3">
+                    <div className="w-14 h-14 rounded-2xl bg-muted/60 border border-border/50 flex items-center justify-center mx-auto">
+                      <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">No image</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Canvas corner badge */}
+              {generatedImage && !isProcessing && (
+                <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-primary/15 border border-primary/30 backdrop-blur-md">
+                  <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">AI Generated</span>
                 </div>
               )}
             </div>
 
             {/* Action bar */}
             <div className="flex gap-3 mt-4 justify-center">
-              <Button onClick={handleDownload} disabled={!generatedImage} className="gap-2 bg-primary text-primary-foreground">
+              <Button
+                onClick={handleDownload}
+                disabled={!generatedImage || isProcessing}
+                className="gap-2.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-6 h-11 font-semibold transition-all hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] disabled:shadow-none"
+              >
                 <Download className="h-4 w-4" />
                 {t(lang, "studio.download")}
               </Button>
-              <Button variant="outline" onClick={handleShare} disabled={!generatedImage} className="gap-2">
+              <Button
+                variant="outline"
+                onClick={handleShare}
+                disabled={!generatedImage || isProcessing}
+                className="gap-2.5 border-border/70 hover:border-primary/50 hover:bg-primary/5 rounded-xl px-6 h-11 font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
                 <Share2 className="h-4 w-4" />
                 {t(lang, "studio.share")}
               </Button>
             </div>
           </div>
 
-          {/* Side panel / Bottom sheet on mobile */}
+          {/* Side panel */}
           <div className="w-full lg:w-80 glass-card p-5">
             {mode === "tryon" ? (
               <>
@@ -243,9 +303,9 @@ export default function StudioPage({
                       key={preset.key}
                       onClick={() => handleStyleSelect(preset.key)}
                       disabled={isProcessing}
-                      className="glass-card p-4 text-center hover:bg-surface-hover transition-colors disabled:opacity-50 rounded-xl"
+                      className="glass-card p-4 text-center hover:bg-surface-hover hover:border-primary/30 transition-all disabled:opacity-50 rounded-xl group"
                     >
-                      <preset.icon className="h-6 w-6 text-primary mx-auto mb-2" />
+                      <preset.icon className="h-6 w-6 text-primary mx-auto mb-2 group-hover:scale-110 transition-transform" />
                       <span className={`text-xs text-foreground ${lang === "bn" ? "font-bengali" : ""}`}>
                         {t(lang, `studio.styles.${preset.key}`)}
                       </span>
@@ -266,7 +326,7 @@ export default function StudioPage({
                     <button
                       key={i}
                       onClick={() => onGenerated(img)}
-                      className="aspect-square rounded-lg overflow-hidden border border-border/50 hover:border-primary/50 transition-colors"
+                      className="aspect-square rounded-lg overflow-hidden border border-border/50 hover:border-primary/50 hover:scale-105 transition-all"
                     >
                       <img src={img} alt={`History ${i + 1}`} className="w-full h-full object-cover" />
                     </button>

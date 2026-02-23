@@ -113,6 +113,16 @@
   50% { opacity: 1; }
 }
 
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.studio-shimmer {
+  background: linear-gradient(90deg, transparent, hsl(var(--brand-green) / 0.08), transparent);
+  animation: shimmer 2s ease-in-out infinite;
+}
+
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
