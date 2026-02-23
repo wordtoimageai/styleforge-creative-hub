@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { MessageCircle } from "lucide-react";
 import type { Language } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 
@@ -20,19 +21,28 @@ export function Footer({ lang }: FooterProps) {
             </span>
           </div>
 
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-muted-foreground">
             <a href="https://startbd.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
               startbd.com
             </a>
             <a href="https://bdai.ai" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
               bdai.ai
             </a>
-            <a href="https://bdai.dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-              bdai.dev
-            </a>
             <Link to="/ecosystem" className="hover:text-foreground transition-colors">
-              Architecture
+              {t(lang, "footer.architecture")}
             </Link>
+            <a href="#" className="hover:text-foreground transition-colors">
+              {t(lang, "footer.privacy")}
+            </a>
+            <a
+              href="https://wa.me/8801XXXXXXXXX"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-primary hover:text-primary/80 transition-colors"
+            >
+              <MessageCircle className="h-4 w-4" />
+              {t(lang, "footer.whatsapp")}
+            </a>
           </div>
 
           <p className="text-xs text-muted-foreground">
