@@ -1,4 +1,3 @@
-import React, { forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, Sparkles, Shield, Zap, MapPin, Globe, Layers, Shirt, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +20,7 @@ const features = [
   { icon: Layers, key: "features.whiteLabel" },
 ];
 
-const HomePage = forwardRef<HTMLElement, HomePageProps>(function HomePage({ lang, onSelectMode }, ref) {
+const HomePage = ({ lang, onSelectMode }: HomePageProps) => {
   const navigate = useNavigate();
 
   const handleStart = (mode: AppMode) => {
@@ -30,7 +29,7 @@ const HomePage = forwardRef<HTMLElement, HomePageProps>(function HomePage({ lang
   };
 
   return (
-    <main ref={ref} className="min-h-screen flex flex-col">
+    <main className="min-h-screen flex flex-col">
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-primary/10 blur-3xl float-animation" />
@@ -139,22 +138,25 @@ const HomePage = forwardRef<HTMLElement, HomePageProps>(function HomePage({ lang
               { icon: Camera, step: "1", titleKey: "howItWorks.step1.title", descKey: "howItWorks.step1.desc" },
               { icon: Shirt, step: "2", titleKey: "howItWorks.step2.title", descKey: "howItWorks.step2.desc" },
               { icon: Wand2, step: "3", titleKey: "howItWorks.step3.title", descKey: "howItWorks.step3.desc" },
-            ].map((item) => (
-              <div key={item.step} className="glass-card p-8 text-center relative">
-                <div className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-5">
-                  <item.icon className="h-6 w-6" />
+            ].map((item) => {
+              const IconComp = item.icon;
+              return (
+                <div key={item.step} className="glass-card p-8 text-center relative">
+                  <div className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-5">
+                    <IconComp className="h-6 w-6" />
+                  </div>
+                  <span className="absolute top-4 right-4 text-xs font-bold text-muted-foreground bg-muted rounded-full w-6 h-6 flex items-center justify-center">
+                    {item.step}
+                  </span>
+                  <h3 className={`text-lg font-heading font-bold text-foreground mb-2 ${lang === "bn" ? "font-bengali" : ""}`}>
+                    {t(lang, item.titleKey)}
+                  </h3>
+                  <p className={`text-sm text-muted-foreground ${lang === "bn" ? "font-bengali" : ""}`}>
+                    {t(lang, item.descKey)}
+                  </p>
                 </div>
-                <span className="absolute top-4 right-4 text-xs font-bold text-muted-foreground bg-muted rounded-full w-6 h-6 flex items-center justify-center">
-                  {item.step}
-                </span>
-                <h3 className={`text-lg font-heading font-bold text-foreground mb-2 ${lang === "bn" ? "font-bengali" : ""}`}>
-                  {t(lang, item.titleKey)}
-                </h3>
-                <p className={`text-sm text-muted-foreground ${lang === "bn" ? "font-bengali" : ""}`}>
-                  {t(lang, item.descKey)}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -162,18 +164,21 @@ const HomePage = forwardRef<HTMLElement, HomePageProps>(function HomePage({ lang
       {/* Features */}
       <section className="relative px-4 pb-20">
         <div className="container mx-auto grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl">
-          {features.map((f, i) => (
-            <div
-              key={f.key}
-              className="glass-card p-5 text-center animate-slide-up"
-              style={{ animationDelay: `${i * 0.1}s` }}
-            >
-              <f.icon className="h-8 w-8 text-primary mx-auto mb-3" />
-              <p className={`text-sm font-medium text-foreground ${lang === "bn" ? "font-bengali" : ""}`}>
-                {t(lang, f.key)}
-              </p>
-            </div>
-          ))}
+          {features.map((f, i) => {
+            const IconComp = f.icon;
+            return (
+              <div
+                key={f.key}
+                className="glass-card p-5 text-center animate-slide-up"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              >
+                <IconComp className="h-8 w-8 text-primary mx-auto mb-3" />
+                <p className={`text-sm font-medium text-foreground ${lang === "bn" ? "font-bengali" : ""}`}>
+                  {t(lang, f.key)}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -221,6 +226,6 @@ const HomePage = forwardRef<HTMLElement, HomePageProps>(function HomePage({ lang
       </section>
     </main>
   );
-});
+};
 
 export default HomePage;
