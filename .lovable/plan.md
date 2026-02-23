@@ -1,57 +1,82 @@
 
 
-# Integrate Brand Partnership Wardrobe into BDai.studio
+# BDai.studio Homepage Overhaul + UX Fixes (Audit-Driven)
 
-## What This Adds
-The uploaded files introduce a **Brand Partnership system** — a curated wardrobe of sponsored garments (Aarong Eid 2026 collection) with pricing, discount badges, and "Buy Now" CTAs. This transforms the Try-On mode from a simple file upload into a shoppable experience.
+Based on the external audit and the reference `index.tsx` knowledge, this plan addresses the critical and high-impact gaps in the current homepage and navigation. The goal is to transform the thin Hero + Features homepage into a high-converting landing page, fix navigation hierarchy, and add trust signals.
 
-## New Features
-- **Wardrobe catalog** with Eid Collection and regular items, category filters, and brand banners
-- **Outfit Stack** panel showing layered garments with brand badges and purchase cards for sponsored items
-- **Buy Now flow** with BDT pricing, discount percentages, and affiliate tracking links
-- **Custom upload** tab alongside the curated wardrobe
+---
 
-## Files to Create
+## What Changes
 
-### 1. `src/lib/wardrobe-types.ts`
-- Adapted from the uploaded `types.ts`
-- Contains `WardrobeItem`, `OutfitLayer`, and `SavedOutfit` interfaces
-- Adds brand partnership fields (brand, brandLogo, price, buyUrl, category, isSponsored, discount, eidCollection)
+### 1. Homepage Overhaul (`src/pages/HomePage.tsx`)
 
-### 2. `src/lib/wardrobe-data.ts`
-- Adapted from the uploaded `wardrobe.ts`
-- Contains `defaultWardrobe` array with Aarong Eid 2026 placeholder items and generic items
-- Utility functions: `getBrandWardrobe()`, `getEidCollection()`, `getByBrand()`
+The current homepage has only a hero section and a 4-card feature row. The updated version will follow a proven high-converting structure:
 
-### 3. `src/components/WardrobeSheet.tsx`
-- Adapted from `WardrobeSheet.tsx` — restyled to match BDai.studio dark theme using Tailwind + shadcn
-- Uses `Dialog` from shadcn instead of `framer-motion` (no new dependency needed)
-- Three tabs: Eid Collection (with category filter chips), All Items, Upload
-- Garment cards show discount badges, brand labels, BDT prices
-- Clicking a garment fetches the image URL, converts to base64, and triggers the AI try-on via existing `generateImage()` flow
+- **Hero Section** (enhanced) -- Keep existing CTAs but add a visual demo teaser below (animated before/after mockup showing try-on concept, not a real API call)
+- **"How It Works" Section** (NEW) -- 3-step visual flow: Upload Photo, Choose Style, Generate. Uses Lucide icons with numbered steps
+- **Social Proof / Stats Section** (NEW) -- Metrics strip: "10,000+ Try-Ons", "30-Second Results", "50+ Brands". Even as aspirational placeholders, these build trust
+- **Features Grid** (enhanced) -- Expand from 4 cards to 6 with better descriptions (Gemini AI, 30-Second Results, Made in BD, Privacy First, Bilingual, White-Label Ready)
+- **FAQ Section** (NEW) -- 4-5 common questions using shadcn Accordion: "Is my photo stored?", "How does it work?", "What garments are supported?", etc.
+- **Final CTA Banner** (NEW) -- Full-width gradient banner with "Start Designing Free" button
 
-### 4. `src/components/OutfitStack.tsx`
-- Adapted from `OutfitStack.tsx` — restyled for dark theme
-- Shows numbered outfit layers with thumbnails and brand badges
-- Sponsored item purchase cards with brand logo, discounted price, and "Buy Now" button
-- "Add Garment" button opens the WardrobeSheet
+### 2. Navigation Restructure (`src/components/Navbar.tsx`)
 
-## Files to Modify
+Per the audit, "Ecosystem" should not be a top-level nav item. Changes:
+- Replace nav items with: **Home**, **For Brands** (links to `/stylevu`), **How It Works** (scrolls to `#how-it-works` on homepage)
+- Remove "Ecosystem" from main nav (keep it in Footer)
+- Add a mobile hamburger menu using shadcn Sheet for small screens
 
-### 5. `src/pages/StudioPage.tsx`
-- Replace the simple file upload in Try-On mode with the new WardrobeSheet + OutfitStack
-- Add state for `outfitLayers` (array of `OutfitLayer`) and `wardrobeOpen` flag
-- When a garment is selected from the wardrobe, call `generateImage({ mode: "tryon", ... })` and push result to outfit stack
-- Side panel shows OutfitStack (with layers + buy cards) instead of the plain upload label
-- "Add Garment" button in OutfitStack opens WardrobeSheet dialog
+### 3. Footer Enhancement (`src/components/Footer.tsx`)
 
-### 6. `src/lib/i18n.ts`
-- Add new translation keys for wardrobe UI: `studio.wardrobe`, `studio.outfitStack`, `studio.addGarment`, `studio.buyNow`, `studio.eidCollection`
+- Add "Architecture" link (replaces top nav Ecosystem link -- already exists)
+- Add "Privacy Policy" placeholder link (trust signal flagged in audit)
+- Add WhatsApp contact button/link for B2B leads
+
+### 4. StyleVu Enhancements (`src/pages/StyleVuPage.tsx`)
+
+- Add countdown timer to the Ramadan banner (even a static "Ends March 31" date adds urgency)
+- Add "Made in Bangladesh" trust badge near pricing cards
+- Add a "How Brands Use StyleVu" mini case study section (placeholder/mockup)
+
+### 5. i18n Updates (`src/lib/i18n.ts`)
+
+Add new translation keys for:
+- How It Works steps (upload, choose, generate)
+- FAQ questions and answers
+- Stats section labels
+- Updated nav labels ("For Brands" instead of "StyleVu")
+- Privacy Policy, WhatsApp CTA text
+- Both `en` and `bn` entries
+
+### 6. CSS Additions (`src/index.css`)
+
+- Add a subtle grid/dot pattern background utility class for the demo teaser area
+- Add a counter/stats animation keyframe for the social proof numbers
+
+---
+
+## What This Does NOT Change
+
+- Studio page, Upload page, Processing page -- untouched
+- Wardrobe system -- untouched
+- Edge function / AI logic -- untouched
+- App routing structure in `App.tsx` -- only minor nav label updates
+
+## Files Modified
+
+| File | Change |
+|---|---|
+| `src/pages/HomePage.tsx` | Major rewrite: add How It Works, Stats, FAQ, CTA sections |
+| `src/components/Navbar.tsx` | Restructure nav items, add mobile hamburger menu |
+| `src/components/Footer.tsx` | Add Privacy Policy link, WhatsApp link |
+| `src/pages/StyleVuPage.tsx` | Add countdown date, trust badge, case study placeholder |
+| `src/lib/i18n.ts` | Add ~40 new translation keys (en + bn) |
+| `src/index.css` | Add stats counter animation, grid pattern utility |
 
 ## Technical Notes
-- No new npm dependencies needed — uses existing shadcn Dialog, Tabs, and Badge components plus Lucide icons
-- The `framer-motion` dependency from the original WardrobeSheet is replaced with CSS animations and shadcn Dialog for the modal
-- All styling converted from light/white theme classes to the app's dark glass-card theme
-- Garment images are fetched from URL, converted to base64 via FileReader, then sent through the existing `generateImage()` edge function
-- The wardrobe data is static/client-side for now (can be moved to database later for brand dashboard management)
+
+- No new npm dependencies -- mobile menu uses existing shadcn Sheet component
+- FAQ uses existing shadcn Accordion component
+- All new sections follow the existing `glass-card`, `gradient-text`, and `animate-slide-up` patterns
+- Bilingual support maintained for all new content via i18n
 
