@@ -15,18 +15,6 @@ import OnboardingPage from "@/pages/OnboardingPage";
 import EcosystemPage from "@/pages/EcosystemPage";
 import NotFound from "@/pages/NotFound";
 
-console.log("Component check:", {
-  HomePage: typeof HomePage,
-  UploadPage: typeof UploadPage,
-  ProcessingPage: typeof ProcessingPage,
-  StudioPage: typeof StudioPage,
-  StyleVuPage: typeof StyleVuPage,
-  OnboardingPage: typeof OnboardingPage,
-  EcosystemPage: typeof EcosystemPage,
-  NotFound: typeof NotFound,
-  Navbar: typeof Navbar,
-  Footer: typeof Footer,
-});
 
 const queryClient = new QueryClient();
 
