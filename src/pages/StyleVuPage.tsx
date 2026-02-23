@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Check, Sparkles, BarChart3, Globe, Shield, Palette, Zap } from "lucide-react";
+import { Check, Sparkles, BarChart3, Globe, Shield, Palette, Zap, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Language } from "@/lib/i18n";
@@ -49,9 +49,12 @@ export default function StyleVuPage({ lang }: StyleVuPageProps) {
       <section className="relative px-4 py-20 text-center">
         <div className="absolute inset-0 gradient-bg pointer-events-none" />
         <div className="relative max-w-3xl mx-auto">
-          <Badge className="mb-6 bg-accent/10 text-accent border-accent/20">
+          <Badge className="mb-4 bg-accent/10 text-accent border-accent/20">
             {t(lang, "stylevu.ramadan")}
           </Badge>
+          <p className="text-xs text-accent/80 mb-6 font-medium">
+            {t(lang, "stylevu.ramadanExpiry")}
+          </p>
           <h1 className={`text-3xl md:text-5xl font-heading font-bold text-foreground mb-4 ${lang === "bn" ? "font-bengali" : ""}`}>
             {t(lang, "stylevu.hero")}
           </h1>
@@ -72,6 +75,17 @@ export default function StyleVuPage({ lang }: StyleVuPageProps) {
         </div>
       </section>
 
+      {/* Trust Badge */}
+      <section className="px-4 pb-8">
+        <div className="container mx-auto max-w-3xl">
+          <div className="glass-card p-4 text-center">
+            <p className={`text-sm font-medium text-muted-foreground ${lang === "bn" ? "font-bengali" : ""}`}>
+              {t(lang, "stylevu.trustBadge")}
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Features */}
       <section className="px-4 py-16">
         <div className="container mx-auto max-w-5xl">
@@ -86,6 +100,32 @@ export default function StyleVuPage({ lang }: StyleVuPageProps) {
                 <p className="text-sm text-muted-foreground">{f.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Case Study */}
+      <section className="px-4 py-16">
+        <div className="container mx-auto max-w-3xl">
+          <h2 className={`text-2xl md:text-3xl font-heading font-bold text-center text-foreground mb-10 ${lang === "bn" ? "font-bengali" : ""}`}>
+            {t(lang, "stylevu.caseStudy.title")}
+          </h2>
+          <div className="glass-card p-8 relative">
+            <Quote className="h-8 w-8 text-primary/30 absolute top-6 left-6" />
+            <div className="pl-10">
+              <p className={`text-lg text-foreground italic mb-4 ${lang === "bn" ? "font-bengali" : ""}`}>
+                "{t(lang, "stylevu.caseStudy.quote")}"
+              </p>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <p className="font-heading font-bold text-foreground">{t(lang, "stylevu.caseStudy.brand")}</p>
+                  <p className="text-xs text-muted-foreground">{t(lang, "stylevu.caseStudy.note")}</p>
+                </div>
+                <Badge className="bg-primary/10 text-primary border-primary/20">
+                  {t(lang, "stylevu.caseStudy.metric")}
+                </Badge>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -129,6 +169,13 @@ export default function StyleVuPage({ lang }: StyleVuPageProps) {
                 </Button>
               </div>
             ))}
+          </div>
+
+          {/* Trust badge under pricing */}
+          <div className="mt-8 text-center">
+            <p className={`text-xs text-muted-foreground ${lang === "bn" ? "font-bengali" : ""}`}>
+              {t(lang, "stylevu.trustBadge")}
+            </p>
           </div>
         </div>
       </section>
