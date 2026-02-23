@@ -1,3 +1,4 @@
+import React, { forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Upload, Camera, Sparkles, Shield, Zap, MapPin, Globe, Layers, Shirt, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,7 @@ const features = [
   { icon: Layers, key: "features.whiteLabel" },
 ];
 
-export default function HomePage({ lang, onSelectMode }: HomePageProps) {
+const HomePage = forwardRef<HTMLElement, HomePageProps>(function HomePage({ lang, onSelectMode }, ref) {
   const navigate = useNavigate();
 
   const handleStart = (mode: AppMode) => {
@@ -29,7 +30,7 @@ export default function HomePage({ lang, onSelectMode }: HomePageProps) {
   };
 
   return (
-    <main className="min-h-screen flex flex-col">
+    <main ref={ref} className="min-h-screen flex flex-col">
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-primary/10 blur-3xl float-animation" />
@@ -220,4 +221,6 @@ export default function HomePage({ lang, onSelectMode }: HomePageProps) {
       </section>
     </main>
   );
-}
+});
+
+export default HomePage;
