@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Camera, Sparkles, Shield, Zap, MapPin, Globe, Layers, Shirt, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import BeforeAfterDemo from "@/components/BeforeAfterDemo";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { Language } from "@/lib/i18n";
 import type { AppMode } from "@/lib/app-state";
@@ -79,23 +80,9 @@ const HomePage = ({ lang, onSelectMode }: HomePageProps) => {
       {/* Demo Teaser */}
       <section className="relative px-4 pb-16">
         <div className="container mx-auto max-w-3xl">
-          <div className="dot-grid rounded-2xl p-8 glass-card">
-            <div className="flex items-center justify-center gap-6 md:gap-10">
-              <div className="w-28 h-36 md:w-36 md:h-44 bg-muted rounded-xl flex items-center justify-center pulse-glow">
-                <Camera className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <Wand2 className="h-6 w-6 text-primary animate-pulse" />
-                <span className="text-xs text-muted-foreground font-medium">AI</span>
-              </div>
-              <div className="w-28 h-36 md:w-36 md:h-44 bg-primary/10 rounded-xl border-2 border-primary/30 flex items-center justify-center">
-                <Shirt className="h-8 w-8 text-primary" />
-              </div>
-            </div>
-            <p className="text-center text-sm text-muted-foreground mt-4">
-              {lang === "bn" ? "এআই ট্রাই-অন ডেমো প্রিভিউ" : "AI Try-On Demo Preview"}
-            </p>
-          </div>
+          <BeforeAfterDemo
+            label={lang === "bn" ? "এআই ট্রাই-অন ডেমো প্রিভিউ" : "AI Try-On Demo Preview"}
+          />
         </div>
       </section>
 
