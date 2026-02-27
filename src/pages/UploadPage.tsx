@@ -1,9 +1,10 @@
 import { useCallback, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, ArrowLeft, ShieldCheck, ImageIcon, Camera, Sparkles } from "lucide-react";
+import { Upload, ArrowLeft, ShieldCheck, Camera, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
+import ImageCropDialog from "@/components/ImageCropDialog";
 import type { Language } from "@/lib/i18n";
 import type { AppMode } from "@/lib/app-state";
 import { t } from "@/lib/i18n";
@@ -22,6 +23,7 @@ export default function UploadPage({ lang, mode, onUpload }: UploadPageProps) {
   const isMobile = useIsMobile();
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const processFile = useCallback((file: File) => {
@@ -36,11 +38,21 @@ export default function UploadPage({ lang, mode, onUpload }: UploadPageProps) {
     }
     const reader = new FileReader();
     reader.onload = () => {
-      onUpload(reader.result as string);
-      navigate("/processing");
+      // Show crop dialog instead of uploading directly
+      setPreviewSrc(reader.result as string);
     };
     reader.readAsDataURL(file);
-  }, [lang, navigate, onUpload]);
+  }, [lang]);
+
+  const handleCropConfirm = useCallback((croppedBase64: string) => {
+    setPreviewSrc(null);
+    onUpload(croppedBase64);
+    navigate("/processing");
+  }, [navigate, onUpload]);
+
+  const handleCropCancel = useCallback(() => {
+    setPreviewSrc(null);
+  }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -90,11 +102,9 @@ export default function UploadPage({ lang, mode, onUpload }: UploadPageProps) {
           onDrop={handleDrop}
           style={{ aspectRatio: "3/4" }}
         >
-          {/* Shimmer overlay on drag */}
           {dragOver && (
             <div className="absolute inset-0 studio-shimmer pointer-events-none" />
           )}
-
           <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileInput} className="hidden" />
           <div className="flex flex-col items-center gap-4 relative z-10">
             <div className={`h-16 w-16 rounded-full flex items-center justify-center transition-all duration-300 ${
@@ -146,6 +156,16 @@ export default function UploadPage({ lang, mode, onUpload }: UploadPageProps) {
           <span className={lang === "bn" ? "font-bengali" : ""}>{t(lang, "upload.privacy")}</span>
         </div>
       </div>
+
+      {/* Crop/Rotate Dialog */}
+      {previewSrc && (
+        <ImageCropDialog
+          open={!!previewSrc}
+          imageSrc={previewSrc}
+          onConfirm={handleCropConfirm}
+          onCancel={handleCropCancel}
+        />
+      )}
     </main>
   );
 }
