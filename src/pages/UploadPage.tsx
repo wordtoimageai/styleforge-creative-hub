@@ -1,8 +1,9 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, ArrowLeft, ShieldCheck, ImageIcon } from "lucide-react";
+import { Upload, ArrowLeft, ShieldCheck, ImageIcon, Camera, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Language } from "@/lib/i18n";
 import type { AppMode } from "@/lib/app-state";
 import { t } from "@/lib/i18n";
@@ -18,8 +19,10 @@ const VALID_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export default function UploadPage({ lang, mode, onUpload }: UploadPageProps) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const processFile = useCallback((file: File) => {
     setError(null);
@@ -77,24 +80,61 @@ export default function UploadPage({ lang, mode, onUpload }: UploadPageProps) {
 
         {/* Drop zone */}
         <label
-          className={`glass-card flex flex-col items-center justify-center p-10 cursor-pointer transition-all border-2 border-dashed ${
-            dragOver ? "border-primary bg-primary/5" : "border-border/50 hover:border-primary/50"
+          className={`glass-card flex flex-col items-center justify-center p-10 cursor-pointer transition-all duration-300 border-2 border-dashed relative overflow-hidden ${
+            dragOver
+              ? "border-primary bg-primary/10 scale-[1.02] shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4)]"
+              : "border-border/50 hover:border-primary/50 hover:bg-card/80"
           }`}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
           style={{ aspectRatio: "3/4" }}
         >
+          {/* Shimmer overlay on drag */}
+          {dragOver && (
+            <div className="absolute inset-0 studio-shimmer pointer-events-none" />
+          )}
+
           <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileInput} className="hidden" />
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-              {dragOver ? <ImageIcon className="h-8 w-8 text-primary" /> : <Upload className="h-8 w-8 text-primary" />}
+          <div className="flex flex-col items-center gap-4 relative z-10">
+            <div className={`h-16 w-16 rounded-full flex items-center justify-center transition-all duration-300 ${
+              dragOver ? "bg-primary/20 scale-110" : "bg-primary/10"
+            }`}>
+              {dragOver ? (
+                <Sparkles className="h-8 w-8 text-primary animate-pulse" />
+              ) : (
+                <Upload className="h-8 w-8 text-primary" />
+              )}
             </div>
-            <p className={`text-sm text-muted-foreground text-center ${lang === "bn" ? "font-bengali" : ""}`}>
-              {t(lang, "upload.guide")}
+            <p className={`text-sm text-muted-foreground text-center transition-colors ${
+              dragOver ? "text-primary font-medium" : ""
+            } ${lang === "bn" ? "font-bengali" : ""}`}>
+              {dragOver ? "Drop to upload!" : t(lang, "upload.guide")}
             </p>
           </div>
         </label>
+
+        {/* Camera capture button (mobile) */}
+        {isMobile && (
+          <div className="mt-4">
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileInput}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              className="w-full gap-2 h-12 border-border/50 text-muted-foreground hover:text-primary hover:border-primary/50"
+              onClick={() => cameraInputRef.current?.click()}
+            >
+              <Camera className="h-5 w-5" />
+              <span className={lang === "bn" ? "font-bengali" : ""}>Take a Photo</span>
+            </Button>
+          </div>
+        )}
 
         {error && (
           <p className="mt-4 text-sm text-destructive text-center">{error}</p>
