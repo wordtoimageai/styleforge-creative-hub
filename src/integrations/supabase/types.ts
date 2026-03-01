@@ -14,7 +14,200 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      brands: {
+        Row: {
+          api_key: string | null
+          business_name: string
+          contact_name: string | null
+          created_at: string
+          custom_domain: string | null
+          email: string
+          font_family: string | null
+          id: string
+          license_accepted_at: string | null
+          logo_url: string | null
+          monthly_limit: number
+          phone: string | null
+          plan: Database["public"]["Enums"]["brand_plan"]
+          primary_color: string | null
+          secondary_color: string | null
+          status: Database["public"]["Enums"]["brand_status"]
+          subdomain: string
+          terms_accepted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_key?: string | null
+          business_name: string
+          contact_name?: string | null
+          created_at?: string
+          custom_domain?: string | null
+          email: string
+          font_family?: string | null
+          id?: string
+          license_accepted_at?: string | null
+          logo_url?: string | null
+          monthly_limit?: number
+          phone?: string | null
+          plan?: Database["public"]["Enums"]["brand_plan"]
+          primary_color?: string | null
+          secondary_color?: string | null
+          status?: Database["public"]["Enums"]["brand_status"]
+          subdomain: string
+          terms_accepted_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_key?: string | null
+          business_name?: string
+          contact_name?: string | null
+          created_at?: string
+          custom_domain?: string | null
+          email?: string
+          font_family?: string | null
+          id?: string
+          license_accepted_at?: string | null
+          logo_url?: string | null
+          monthly_limit?: number
+          phone?: string | null
+          plan?: Database["public"]["Enums"]["brand_plan"]
+          primary_color?: string | null
+          secondary_color?: string | null
+          status?: Database["public"]["Enums"]["brand_status"]
+          subdomain?: string
+          terms_accepted_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          brand_id: string
+          buy_link: string | null
+          category: string | null
+          colors: string[] | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          name_bn: string | null
+          price: number
+          sizes: string[] | null
+          sku: string | null
+          stock_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          brand_id: string
+          buy_link?: string | null
+          category?: string | null
+          colors?: string[] | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          name_bn?: string | null
+          price?: number
+          sizes?: string[] | null
+          sku?: string | null
+          stock_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brand_id?: string
+          buy_link?: string | null
+          category?: string | null
+          colors?: string[] | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          name_bn?: string | null
+          price?: number
+          sizes?: string[] | null
+          sku?: string | null
+          stock_status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_logs: {
+        Row: {
+          brand_id: string
+          error_message: string | null
+          event_type: string
+          id: string
+          processing_time_ms: number | null
+          product_id: string | null
+          session_id: string | null
+          success: boolean | null
+          timestamp: string
+          user_country: string | null
+          user_device: string | null
+        }
+        Insert: {
+          brand_id: string
+          error_message?: string | null
+          event_type: string
+          id?: string
+          processing_time_ms?: number | null
+          product_id?: string | null
+          session_id?: string | null
+          success?: boolean | null
+          timestamp?: string
+          user_country?: string | null
+          user_device?: string | null
+        }
+        Update: {
+          brand_id?: string
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          processing_time_ms?: number | null
+          product_id?: string | null
+          session_id?: string | null
+          success?: boolean | null
+          timestamp?: string
+          user_country?: string | null
+          user_device?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_logs_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "usage_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +216,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      brand_plan: "starter" | "growth" | "pro" | "enterprise"
+      brand_status: "trial" | "active" | "suspended"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +344,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      brand_plan: ["starter", "growth", "pro", "enterprise"],
+      brand_status: ["trial", "active", "suspended"],
+    },
   },
 } as const
