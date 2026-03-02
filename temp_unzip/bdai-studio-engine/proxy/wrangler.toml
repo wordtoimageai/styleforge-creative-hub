@@ -1,0 +1,22 @@
+name = "bdai-studio-proxy"
+main = "worker.js"
+compatibility_date = "2024-12-01"
+
+# Custom domain (set up in Cloudflare Dashboard)
+# routes = [{ pattern = "api.bdai.studio/*", zone_name = "bdai.studio" }]
+
+[[kv_namespaces]]
+binding = "BRAND_USAGE"
+id = "YOUR_BRAND_USAGE_KV_ID"
+preview_id = "YOUR_BRAND_USAGE_PREVIEW_KV_ID"
+
+[[kv_namespaces]]
+binding = "BRAND_CONFIG"
+id = "YOUR_BRAND_CONFIG_KV_ID"
+preview_id = "YOUR_BRAND_CONFIG_PREVIEW_KV_ID"
+
+[vars]
+ENVIRONMENT = "production"
+PLATFORM = "BDai.studio"
+
+# Secrets (set via: wrangler secret put GEMINI_API_KEY)
