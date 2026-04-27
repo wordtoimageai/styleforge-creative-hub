@@ -29,38 +29,55 @@ function AppContent() {
 
   return (
     <Routes>
-      {/* Public pages with navbar/footer */}
+      {/* Marketing pages — light editorial theme */}
       <Route path="/" element={
-        <>
+        <div className="marketing min-h-screen">
           <Navbar lang={state.lang} onToggleLang={toggleLang} />
           <HomePage lang={state.lang} onSelectMode={state.setMode} />
           <Footer lang={state.lang} />
-        </>
+        </div>
       } />
+      <Route path="/stylevu" element={
+        <div className="marketing min-h-screen">
+          <Navbar lang={state.lang} onToggleLang={toggleLang} />
+          <StyleVuPage lang={state.lang} />
+          <Footer lang={state.lang} />
+        </div>
+      } />
+      <Route path="/onboarding" element={
+        <div className="marketing min-h-screen">
+          <Navbar lang={state.lang} onToggleLang={toggleLang} />
+          <OnboardingPage lang={state.lang} />
+          <Footer lang={state.lang} />
+        </div>
+      } />
+      <Route path="/ecosystem" element={
+        <div className="marketing min-h-screen">
+          <Navbar lang={state.lang} onToggleLang={toggleLang} />
+          <EcosystemPage lang={state.lang} />
+          <Footer lang={state.lang} />
+        </div>
+      } />
+
+      {/* App pages — keep dark theme */}
       <Route path="/upload" element={
         <>
-          <Navbar lang={state.lang} onToggleLang={toggleLang} />
+          <Navbar lang={state.lang} onToggleLang={toggleLang} variant="dark" />
           <UploadPage lang={state.lang} mode={state.mode} onUpload={state.setUserPhoto} />
-          <Footer lang={state.lang} />
         </>
       } />
       <Route path="/processing" element={
         <>
-          <Navbar lang={state.lang} onToggleLang={toggleLang} />
+          <Navbar lang={state.lang} onToggleLang={toggleLang} variant="dark" />
           <ProcessingPage lang={state.lang} userPhoto={state.userPhoto} onGenerated={(img) => { state.setGeneratedImage(img); state.addToHistory(img); }} onError={state.setError} />
-          <Footer lang={state.lang} />
         </>
       } />
       <Route path="/studio" element={
         <>
-          <Navbar lang={state.lang} onToggleLang={toggleLang} />
+          <Navbar lang={state.lang} onToggleLang={toggleLang} variant="dark" />
           <StudioPage lang={state.lang} mode={state.mode} onSetMode={state.setMode} userPhoto={state.userPhoto} generatedImage={state.generatedImage} onGenerated={state.setGeneratedImage} history={state.history} onAddHistory={state.addToHistory} />
-          <Footer lang={state.lang} />
         </>
       } />
-      <Route path="/stylevu" element={<><Navbar lang={state.lang} onToggleLang={toggleLang} /><StyleVuPage lang={state.lang} /><Footer lang={state.lang} /></>} />
-      <Route path="/onboarding" element={<><Navbar lang={state.lang} onToggleLang={toggleLang} /><OnboardingPage lang={state.lang} /><Footer lang={state.lang} /></>} />
-      <Route path="/ecosystem" element={<><Navbar lang={state.lang} onToggleLang={toggleLang} /><EcosystemPage lang={state.lang} /><Footer lang={state.lang} /></>} />
 
       {/* Auth pages (no navbar/footer) */}
       <Route path="/signup" element={<SignupPage />} />
