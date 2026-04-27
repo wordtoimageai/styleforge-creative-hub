@@ -282,6 +282,82 @@ const HomePage = ({ lang, onSelectMode }: HomePageProps) => {
         </div>
       </section>
 
+      {/* ============ TRY STYLE GENERATOR ============ */}
+      <section className="relative px-4 lg:px-6 py-24 md:py-32">
+        <div className="container mx-auto max-w-6xl">
+          <div className="relative rounded-[2rem] overflow-hidden border border-[hsl(var(--m-line))] bg-[hsl(var(--m-bg-alt))] p-10 md:p-16 grid md:grid-cols-2 gap-10 items-center">
+            <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-[hsl(var(--m-accent)/0.18)] blur-3xl pointer-events-none" />
+            <div className="relative">
+              <span className="m-eyebrow inline-flex items-center gap-2">
+                <Wand2 className="h-3.5 w-3.5" />
+                {bn ? "স্টাইল জেনারেটর" : "Style Generator"}
+              </span>
+              <h2 className={`m-display text-3xl md:text-5xl font-bold mt-4 text-[hsl(var(--m-ink))] ${bengali}`}>
+                {bn ? "এখনই স্টাইল জেনারেটর চেষ্টা করুন" : "Try the Style Generator"}
+              </h2>
+              <p className={`mt-5 text-base md:text-lg text-[hsl(var(--m-ink-soft))] max-w-lg ${bengali}`}>
+                {bn
+                  ? "একটি ছবি আপলোড করুন, একটি স্টাইল বেছে নিন এবং ৩০ সেকেন্ডের মধ্যে স্টুডিও-মানের ফল পান।"
+                  : "Upload a photo, pick a style, and get studio-quality results in under 30 seconds. No signup required to try."}
+              </p>
+              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => navigate("/upload")}
+                  className="m-btn-primary h-13 px-7 py-4 text-sm inline-flex items-center justify-center gap-2"
+                >
+                  {bn ? "জেনারেটর খুলুন" : "Open the Generator"}
+                  <ArrowUpRight className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => document.getElementById("demo")?.scrollIntoView({ behavior: "smooth" })}
+                  className="m-btn-ghost h-13 px-7 py-4 text-sm inline-flex items-center justify-center gap-2"
+                >
+                  <Play className="h-4 w-4 fill-current" />
+                  {bn ? "ডেমো দেখুন" : "See the demo"}
+                </button>
+              </div>
+              <ul className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {(bn
+                  ? ["৩০ সেকেন্ডে রেজাল্ট", "সাইন আপ ছাড়াই", "প্রাইভেসি ফার্স্ট"]
+                  : ["~30s results", "No signup", "Privacy first"]
+                ).map((item) => (
+                  <li key={item} className={`flex items-center gap-2 text-sm text-[hsl(var(--m-ink-soft))] ${bengali}`}>
+                    <Check className="h-4 w-4 text-[hsl(var(--m-emerald))]" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="relative">
+              <div className="absolute -inset-4 bg-[hsl(var(--m-accent)/0.12)] rounded-[2rem] blur-2xl" />
+              <div className="relative grid grid-cols-2 gap-3">
+                <div className="m-card p-2 rotate-[-3deg] hover:rotate-0 transition-transform duration-500">
+                  <div className="aspect-[3/4] rounded-xl overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80"
+                      alt="Original portrait"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <p className="text-[10px] uppercase tracking-widest text-[hsl(var(--m-muted))] font-semibold mt-2 px-1">Before</p>
+                </div>
+                <div className="m-card p-2 rotate-[3deg] mt-8 hover:rotate-0 transition-transform duration-500">
+                  <div className="aspect-[3/4] rounded-xl overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=400&q=80"
+                      alt="AI styled result"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <p className="text-[10px] uppercase tracking-widest text-[hsl(var(--m-accent-ink))] font-semibold mt-2 px-1">After · AI</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ============ FAQ ============ */}
       <section className="relative px-4 lg:px-6 py-24 md:py-32 bg-[hsl(var(--m-bg-alt))] border-y border-[hsl(var(--m-line))]">
         <div className="container mx-auto max-w-3xl">
