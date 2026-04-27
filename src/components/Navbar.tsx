@@ -1,26 +1,37 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Globe, Menu } from "lucide-react";
+import { Globe, Menu, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import type { Language } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface NavbarProps {
   lang: Language;
   onToggleLang: () => void;
+  variant?: "light" | "dark";
 }
 
-export function Navbar({ lang, onToggleLang }: NavbarProps) {
+export function Navbar({ lang, onToggleLang, variant = "light" }: NavbarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const isActive = (path: string) => location.pathname === path;
 
   const navItems = [
     { path: "/", label: t(lang, "nav.home") },
     { path: "/stylevu", label: t(lang, "nav.forBrands") },
     { path: "/#how-it-works", label: t(lang, "nav.howItWorks"), isAnchor: true },
+    { path: "/ecosystem", label: t(lang, "footer.architecture") },
   ];
 
   const handleNav = (item: typeof navItems[0]) => {
@@ -28,7 +39,7 @@ export function Navbar({ lang, onToggleLang }: NavbarProps) {
     if (item.isAnchor) {
       if (location.pathname !== "/") {
         navigate("/");
-        setTimeout(() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" }), 100);
+        setTimeout(() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" }), 120);
       } else {
         document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
       }
@@ -37,66 +48,111 @@ export function Navbar({ lang, onToggleLang }: NavbarProps) {
     }
   };
 
+  // Style variants
+  const isDark = variant === "dark";
+  const shellBg = isDark
+    ? `bg-background/70 backdrop-blur-xl border-b border-border/40`
+    : scrolled
+      ? "bg-[hsl(var(--m-bg)/0.85)] backdrop-blur-xl border-b border-[hsl(var(--m-line))]"
+      : "bg-transparent border-b border-transparent";
+
+  const inkText = isDark ? "text-foreground" : "text-[hsl(var(--m-ink))]";
+  const mutedText = isDark ? "text-muted-foreground" : "text-[hsl(var(--m-ink-soft))]";
+  const hoverText = isDark ? "hover:text-foreground" : "hover:text-[hsl(var(--m-ink))]";
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/30 px-4 py-3">
-      <div className="container mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="font-heading text-sm font-bold text-primary-foreground">BD</span>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${shellBg}`}>
+      <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-16">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 group">
+          <div className={`h-8 w-8 rounded-xl flex items-center justify-center transition-transform group-hover:rotate-3 ${isDark ? "bg-primary" : "bg-[hsl(var(--m-ink))]"}`}>
+            <span className={`font-heading text-sm font-bold ${isDark ? "text-primary-foreground" : "text-[hsl(var(--m-bg))]"}`}>BD</span>
           </div>
-          <span className="font-heading text-lg font-bold text-foreground">
-            {lang === "bn" ? "বিডি এআই" : "BDai"}<span className="text-primary">.studio</span>
+          <span className={`font-heading text-lg font-bold ${inkText}`}>
+            {lang === "bn" ? "বিডি এআই" : "BDai"}
+            <span className={isDark ? "text-primary" : "text-[hsl(var(--m-accent))]"}>.studio</span>
           </span>
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-6">
-          {navItems.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => handleNav(item)}
-              className={`text-sm font-medium transition-colors ${
-                !item.isAnchor && isActive(item.path) ? "text-primary" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+        <div className="hidden md:flex items-center gap-1">
+          {navItems.map((item) => {
+            const active = !item.isAnchor && isActive(item.path);
+            return (
+              <button
+                key={item.path}
+                onClick={() => handleNav(item)}
+                className={`px-3 py-2 text-sm font-medium rounded-full transition-colors ${
+                  active
+                    ? isDark ? "text-primary" : "text-[hsl(var(--m-ink))] bg-[hsl(var(--m-bg-alt))]"
+                    : `${mutedText} ${hoverText}`
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
         </div>
 
+        {/* Right cluster */}
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={onToggleLang}
-            className="gap-2 text-muted-foreground hover:text-foreground"
+            className={`hidden sm:inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${mutedText} ${hoverText}`}
           >
-            <Globe className="h-4 w-4" />
+            <Globe className="h-3.5 w-3.5" />
             <span className={lang === "bn" ? "font-bengali" : ""}>{lang === "en" ? "বাংলা" : "English"}</span>
-          </Button>
+          </button>
+
+          {!isDark && (
+            <Button
+              size="sm"
+              onClick={() => navigate("/upload")}
+              className="hidden sm:inline-flex h-9 rounded-full bg-[hsl(var(--m-ink))] hover:bg-[hsl(var(--m-accent))] text-[hsl(var(--m-bg))] px-4 gap-1.5"
+            >
+              {t(lang, "nav.tryItFree")}
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Button>
+          )}
 
           {/* Mobile hamburger */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className={inkText}>
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-64 bg-card border-border">
-              <div className="flex flex-col gap-4 mt-8">
+            <SheetContent
+              side="right"
+              className={`w-72 ${isDark ? "bg-card border-border" : "bg-[hsl(var(--m-bg))] border-[hsl(var(--m-line))]"}`}
+            >
+              <div className="flex flex-col gap-1 mt-10">
                 {navItems.map((item) => (
                   <button
                     key={item.path}
                     onClick={() => handleNav(item)}
-                    className={`text-left text-base font-medium py-2 px-3 rounded-lg transition-colors ${
+                    className={`text-left text-base font-medium py-3 px-3 rounded-xl transition-colors ${
                       !item.isAnchor && isActive(item.path)
-                        ? "text-primary bg-primary/10"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        ? isDark ? "text-primary bg-primary/10" : "text-[hsl(var(--m-ink))] bg-[hsl(var(--m-bg-alt))]"
+                        : `${mutedText} ${hoverText}`
                     }`}
                   >
                     {item.label}
                   </button>
                 ))}
+                <button
+                  onClick={() => { setMobileOpen(false); onToggleLang(); }}
+                  className={`text-left text-base font-medium py-3 px-3 rounded-xl ${mutedText}`}
+                >
+                  <Globe className="inline h-4 w-4 mr-2" />
+                  {lang === "en" ? "বাংলা" : "English"}
+                </button>
+                <Button
+                  onClick={() => { setMobileOpen(false); navigate("/upload"); }}
+                  className={`mt-4 rounded-full ${isDark ? "" : "bg-[hsl(var(--m-ink))] text-[hsl(var(--m-bg))] hover:bg-[hsl(var(--m-accent))]"}`}
+                >
+                  {t(lang, "nav.tryItFree")}
+                </Button>
               </div>
             </SheetContent>
           </Sheet>
