@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Camera, Sparkles, Shield, Zap, MapPin, Globe, Layers, Shirt, Wand2,
-  ArrowUpRight, ArrowRight, Star, Play, Check,
+  ArrowUpRight, ArrowRight, Star, Play, Check, X,
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import BeforeAfterDemo from "@/components/BeforeAfterDemo";
 import type { Language } from "@/lib/i18n";
 import type { AppMode } from "@/lib/app-state";
@@ -32,6 +34,7 @@ const HomePage = ({ lang, onSelectMode }: HomePageProps) => {
   const navigate = useNavigate();
   const bn = lang === "bn";
   const bengali = bn ? "font-bengali" : "";
+  const [demoOpen, setDemoOpen] = useState(false);
 
   const handleStart = (mode: AppMode) => {
     onSelectMode(mode);
