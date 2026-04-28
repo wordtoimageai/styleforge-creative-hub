@@ -314,6 +314,82 @@ const HomePage = ({ lang, onSelectMode }: HomePageProps) => {
         </div>
       </section>
 
+      {/* ============ TRY STYLE GENERATOR ============ */}
+      <section className="relative px-4 lg:px-6 py-24 md:py-32">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+            <div>
+              <span className="m-eyebrow">{bn ? "এআই স্টাইল জেনারেটর" : "AI Style Generator"}</span>
+              <h2 className={`m-display text-3xl md:text-5xl font-bold mt-3 text-[hsl(var(--m-ink))] ${bengali}`}>
+                {bn ? "এখনই স্টাইল জেনারেটর চেষ্টা করুন" : "Try the Style Generator"}
+              </h2>
+              <p className={`mt-5 text-base text-[hsl(var(--m-ink-soft))] ${bengali}`}>
+                {bn
+                  ? "আপনার ছবি আপলোড করুন, পোশাক বেছে নিন, এবং ৩০ সেকেন্ডের কম সময়ে ফল পান।"
+                  : "Upload your photo, pick an outfit, and get studio-grade results in under 30 seconds."}
+              </p>
+              <ul className="mt-8 space-y-3">
+                {(bn
+                  ? ["~৩০ সেকেন্ডে ফল", "সাইন-আপ ছাড়াই", "ব্যক্তিগত ও নিরাপদ"]
+                  : ["~30s results", "No signup required", "Private & secure"]
+                ).map((item) => (
+                  <li key={item} className={`flex items-center gap-3 text-sm text-[hsl(var(--m-ink-soft))] ${bengali}`}>
+                    <Check className="h-4 w-4 text-[hsl(var(--m-emerald))]" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-10 flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => navigate("/upload")}
+                  className="m-btn-primary h-13 px-7 py-4 text-sm inline-flex items-center justify-center gap-2"
+                >
+                  {bn ? "এখনই শুরু করুন" : "Launch Generator"}
+                  <ArrowUpRight className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setDemoOpen(true)}
+                  className="m-btn-ghost h-13 px-7 py-4 text-sm inline-flex items-center justify-center gap-2"
+                >
+                  <Play className="h-4 w-4 fill-current" />
+                  {bn ? "ডেমো দেখুন" : "Watch demo"}
+                </button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute -inset-6 bg-[hsl(var(--m-accent)/0.1)] rounded-[2rem] blur-2xl" />
+              <button
+                onClick={() => setDemoOpen(true)}
+                className="group relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-[hsl(var(--m-ink))] shadow-[0_30px_80px_-30px_hsl(244_72%_30%/0.45)]"
+                aria-label={bn ? "ডেমো প্লে করুন" : "Play demo"}
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=900&q=80"
+                  alt={bn ? "এআই স্টাইল জেনারেটর প্রিভিউ" : "AI Style Generator preview"}
+                  className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--m-ink))]/70 via-transparent to-transparent" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="relative flex h-20 w-20 items-center justify-center rounded-full bg-[hsl(var(--m-bg))] text-[hsl(var(--m-ink))] shadow-2xl group-hover:scale-110 transition-transform">
+                    <span className="absolute inset-0 rounded-full bg-[hsl(var(--m-bg))]/40 animate-ping" />
+                    <Play className="relative h-7 w-7 fill-current ml-1" />
+                  </span>
+                </div>
+                <div className="absolute bottom-5 left-5 right-5 text-left">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--m-bg))]/70 font-semibold">
+                    {bn ? "৪৫ সেকেন্ড" : "45 sec preview"}
+                  </p>
+                  <p className="text-[hsl(var(--m-bg))] font-heading text-lg font-bold mt-1">
+                    {bn ? "ছবি থেকে ফ্যাশন — লাইভ" : "From photo to fashion — live"}
+                  </p>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ============ FINAL CTA ============ */}
       <section className="relative px-4 lg:px-6 py-24 md:py-32">
         <div className="container mx-auto max-w-5xl">
@@ -345,6 +421,45 @@ const HomePage = ({ lang, onSelectMode }: HomePageProps) => {
           </div>
         </div>
       </section>
+
+      {/* ============ DEMO MODAL ============ */}
+      <Dialog open={demoOpen} onOpenChange={setDemoOpen}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden bg-[hsl(var(--m-ink))] border-[hsl(var(--m-ink))]">
+          <button
+            onClick={() => setDemoOpen(false)}
+            className="absolute top-4 right-4 z-10 h-10 w-10 rounded-full bg-[hsl(var(--m-bg))]/15 hover:bg-[hsl(var(--m-bg))]/25 backdrop-blur flex items-center justify-center text-[hsl(var(--m-bg))] transition-colors"
+            aria-label="Close demo"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <div className="aspect-video w-full bg-black">
+            <iframe
+              className="w-full h-full"
+              src={demoOpen ? "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0" : ""}
+              title={bn ? "BDai স্টাইল জেনারেটর ডেমো" : "BDai Style Generator demo"}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+          <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[hsl(var(--m-ink))]">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--m-bg))]/60 font-semibold">
+                {bn ? "লাইভ ডেমো" : "Live demo"}
+              </p>
+              <h3 className={`font-heading text-xl font-bold text-[hsl(var(--m-bg))] mt-1 ${bengali}`}>
+                {bn ? "এআই স্টাইল জেনারেটর কীভাবে কাজ করে" : "How the AI Style Generator works"}
+              </h3>
+            </div>
+            <button
+              onClick={() => { setDemoOpen(false); navigate("/upload"); }}
+              className="h-11 px-5 rounded-full bg-[hsl(var(--m-bg))] text-[hsl(var(--m-ink))] font-semibold text-sm inline-flex items-center gap-2 hover:bg-[hsl(var(--m-accent))] hover:text-[hsl(var(--m-bg))] transition-colors"
+            >
+              {bn ? "এখনই চেষ্টা করুন" : "Try it now"}
+              <ArrowUpRight className="h-4 w-4" />
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 };
