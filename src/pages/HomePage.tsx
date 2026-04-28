@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Camera, Sparkles, Shield, Zap, MapPin, Globe, Layers, Shirt, Wand2,
-  ArrowUpRight, ArrowRight, Star, Play, Check, X,
+  ArrowUpRight, ArrowRight, Star, Play, Pause, Check, X,
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -35,6 +35,14 @@ const HomePage = ({ lang, onSelectMode }: HomePageProps) => {
   const bn = lang === "bn";
   const bengali = bn ? "font-bengali" : "";
   const [demoOpen, setDemoOpen] = useState(false);
+  const [demoPlaying, setDemoPlaying] = useState(false);
+  const DEMO_VIDEO_ID = "dQw4w9WgXcQ";
+  const DEMO_THUMB = `https://img.youtube.com/vi/${DEMO_VIDEO_ID}/maxresdefault.jpg`;
+
+  const closeDemo = () => {
+    setDemoOpen(false);
+    setDemoPlaying(false);
+  };
 
   const handleStart = (mode: AppMode) => {
     onSelectMode(mode);
@@ -499,23 +507,55 @@ const HomePage = ({ lang, onSelectMode }: HomePageProps) => {
       </section>
 
       {/* ============ DEMO MODAL ============ */}
-      <Dialog open={demoOpen} onOpenChange={setDemoOpen}>
+      <Dialog
+        open={demoOpen}
+        onOpenChange={(open) => {
+          setDemoOpen(open);
+          if (!open) setDemoPlaying(false);
+        }}
+      >
         <DialogContent className="max-w-4xl p-0 overflow-hidden bg-[hsl(var(--m-ink))] border-[hsl(var(--m-ink))]">
           <button
-            onClick={() => setDemoOpen(false)}
+            onClick={closeDemo}
             className="absolute top-4 right-4 z-10 h-10 w-10 rounded-full bg-[hsl(var(--m-bg))]/15 hover:bg-[hsl(var(--m-bg))]/25 backdrop-blur flex items-center justify-center text-[hsl(var(--m-bg))] transition-colors"
             aria-label="Close demo"
           >
             <X className="h-5 w-5" />
           </button>
-          <div className="aspect-video w-full bg-black">
-            <iframe
-              className="w-full h-full"
-              src={demoOpen ? "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0" : ""}
-              title={bn ? "BDai স্টাইল জেনারেটর ডেমো" : "BDai Style Generator demo"}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+          <div className="relative aspect-video w-full bg-black">
+            {demoPlaying ? (
+              <iframe
+                className="w-full h-full"
+                src={`https://www.youtube.com/embed/${DEMO_VIDEO_ID}?autoplay=1&rel=0&modestbranding=1`}
+                title={bn ? "BDai স্টাইল জেনারেটর ডেমো" : "BDai Style Generator demo"}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setDemoPlaying(true)}
+                className="group absolute inset-0 w-full h-full"
+                aria-label={bn ? "ভিডিও প্লে করুন" : "Play video"}
+              >
+                <img
+                  src={DEMO_THUMB}
+                  alt={bn ? "ডেমো থাম্বনেইল" : "Demo thumbnail"}
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-500"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = `https://img.youtube.com/vi/${DEMO_VIDEO_ID}/hqdefault.jpg`;
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="relative flex h-20 w-20 items-center justify-center rounded-full bg-[hsl(var(--m-bg))] text-[hsl(var(--m-ink))] shadow-2xl group-hover:scale-110 transition-transform">
+                    <span className="absolute inset-0 rounded-full bg-[hsl(var(--m-bg))]/40 animate-ping" />
+                    <Play className="relative h-7 w-7 fill-current ml-1" />
+                  </span>
+                </div>
+              </button>
+            )}
           </div>
           <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[hsl(var(--m-ink))]">
             <div>
@@ -526,13 +566,32 @@ const HomePage = ({ lang, onSelectMode }: HomePageProps) => {
                 {bn ? "এআই স্টাইল জেনারেটর কীভাবে কাজ করে" : "How the AI Style Generator works"}
               </h3>
             </div>
-            <button
-              onClick={() => { setDemoOpen(false); navigate("/upload"); }}
-              className="h-11 px-5 rounded-full bg-[hsl(var(--m-bg))] text-[hsl(var(--m-ink))] font-semibold text-sm inline-flex items-center gap-2 hover:bg-[hsl(var(--m-accent))] hover:text-[hsl(var(--m-bg))] transition-colors"
-            >
-              {bn ? "এখনই চেষ্টা করুন" : "Try it now"}
-              <ArrowUpRight className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setDemoPlaying((p) => !p)}
+                className="h-11 px-4 rounded-full border border-[hsl(var(--m-bg))]/25 text-[hsl(var(--m-bg))] font-semibold text-sm inline-flex items-center gap-2 hover:bg-[hsl(var(--m-bg))]/10 transition-colors"
+                aria-label={demoPlaying ? "Pause" : "Play"}
+              >
+                {demoPlaying ? (
+                  <>
+                    <Pause className="h-4 w-4 fill-current" />
+                    {bn ? "থামান" : "Pause"}
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4 fill-current" />
+                    {bn ? "প্লে" : "Play"}
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => { closeDemo(); navigate("/upload"); }}
+                className="h-11 px-5 rounded-full bg-[hsl(var(--m-bg))] text-[hsl(var(--m-ink))] font-semibold text-sm inline-flex items-center gap-2 hover:bg-[hsl(var(--m-accent))] hover:text-[hsl(var(--m-bg))] transition-colors"
+              >
+                {bn ? "এখনই চেষ্টা করুন" : "Try it now"}
+                <ArrowUpRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
