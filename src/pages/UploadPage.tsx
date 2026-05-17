@@ -1,6 +1,6 @@
 import { useCallback, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, ArrowLeft, ShieldCheck, Camera, Sparkles } from "lucide-react";
+import { Upload, ArrowLeft, ShieldCheck, Camera, Sparkles, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -8,6 +8,7 @@ import ImageCropDialog from "@/components/ImageCropDialog";
 import type { Language } from "@/lib/i18n";
 import type { AppMode } from "@/lib/app-state";
 import { t } from "@/lib/i18n";
+import devSamplePortrait from "@/assets/dev-sample-portrait.jpg";
 
 interface UploadPageProps {
   lang: Language;
@@ -65,6 +66,21 @@ export default function UploadPage({ lang, mode, onUpload }: UploadPageProps) {
     const file = e.target.files?.[0];
     if (file) processFile(file);
   }, [processFile]);
+
+  const handleDevSeed = useCallback(async () => {
+    try {
+      const resp = await fetch(devSamplePortrait);
+      const blob = await resp.blob();
+      const reader = new FileReader();
+      reader.onload = () => {
+        onUpload(reader.result as string);
+        navigate("/processing");
+      };
+      reader.readAsDataURL(blob);
+    } catch (err) {
+      setError("Failed to seed sample photo");
+    }
+  }, [navigate, onUpload]);
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-12">
@@ -155,6 +171,20 @@ export default function UploadPage({ lang, mode, onUpload }: UploadPageProps) {
           <ShieldCheck className="h-4 w-4" />
           <span className={lang === "bn" ? "font-bengali" : ""}>{t(lang, "upload.privacy")}</span>
         </div>
+
+        {import.meta.env.DEV && (
+          <div className="mt-6 pt-6 border-t border-dashed border-border/40">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDevSeed}
+              className="w-full gap-2 text-xs text-muted-foreground border-dashed"
+            >
+              <FlaskConical className="h-3.5 w-3.5" />
+              Dev: seed sample photo
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Crop/Rotate Dialog */}
