@@ -62,6 +62,9 @@ async function handleTryOn(request, env) {
     return json({ error: 'Missing: brandId, userImage, productImage' }, 400);
   }
 
+  const authError = await requireBrandAuth(request, env, brandId);
+  if (authError) return authError;
+
   // Check rate limit
   const usageKey = `usage:${brandId}:${getCurrentMonth()}`;
   const currentUsage = parseInt((await env.BRAND_USAGE.get(usageKey)) || '0');
@@ -153,6 +156,8 @@ async function handleUsage(brandId, env) {
 async function handleTrack(request, env) {
   try {
     const body = await request.json();
+    const authError = await requireBrandAuth(request, env, body.brandId);
+    if (authError) return authError;
     await trackEvent(env, body.brandId, body.event, body);
     return json({ ok: true });
   } catch {
@@ -163,6 +168,8 @@ async function handleTrack(request, env) {
 async function handleVerify(request, env) {
   try {
     const { brandId, licenseKey } = await request.json();
+    const authError = await requireBrandAuth(request, env, brandId);
+    if (authError) return authError;
     const configKey = `config:${brandId}`;
     const config = JSON.parse((await env.BRAND_CONFIG.get(configKey)) || '{}');
     const valid = config.license?.key === licenseKey && new Date(config.license?.expiresAt) > new Date();
@@ -170,6 +177,25 @@ async function handleVerify(request, env) {
   } catch {
     return json({ valid: false }, 400);
   }
+}
+
+// Validates that the request carries the correct brand API key (from the
+// `brands` table) via `Authorization: Bearer <api_key>` or `X-Brand-Key` header.
+// Returns a Response on failure, or null on success.
+async function requireBrandAuth(request, env, brandId) {
+  if (!brandId) return json({ error: 'Unauthorized' }, 401);
+  const authHeader = request.headers.get('Authorization') || '';
+  const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  const provided = bearer || request.headers.get('X-Brand-Key') || '';
+  if (!provided) return json({ error: 'Unauthorized' }, 401);
+
+  const configKey = `config:${brandId}`;
+  const brandConfig = JSON.parse((await env.BRAND_CONFIG.get(configKey)) || '{}');
+  const expected = brandConfig.api_key || brandConfig.apiKey;
+  if (!expected || provided !== expected) {
+    return json({ error: 'Unauthorized' }, 401);
+  }
+  return null;
 }
 
 function getCurrentMonth() {
