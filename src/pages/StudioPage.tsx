@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import {
   Download, Share2, ArrowLeft, Loader2,
   Moon, Sun, Shirt, PartyPopper, Briefcase, Heart, Snowflake,
@@ -136,8 +136,7 @@ export default function StudioPage({
   }, [generatedImage]);
 
   if (!userPhoto && !generatedImage) {
-    navigate("/");
-    return null;
+    return <Navigate to="/upload" replace />;
   }
 
   return (
