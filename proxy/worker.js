@@ -35,7 +35,7 @@ export default {
         return await handleTryOn(request, env);
       }
       if (path.startsWith('/api/usage/') && request.method === 'GET') {
-        return await handleUsage(path.split('/').pop(), env);
+        return await handleUsage(path.split('/').pop(), env, request);
       }
       if (path === '/api/track' && request.method === 'POST') {
         return await handleTrack(request, env);
@@ -143,7 +143,10 @@ async function handleTryOn(request, env) {
   });
 }
 
-async function handleUsage(brandId, env) {
+async function handleUsage(brandId, env, request) {
+  const authError = await requireBrandAuth(request, env, brandId);
+  if (authError) return authError;
+
   const usageKey = `usage:${brandId}:${getCurrentMonth()}`;
   const currentUsage = parseInt((await env.BRAND_USAGE.get(usageKey)) || '0');
   const configKey = `config:${brandId}`;
