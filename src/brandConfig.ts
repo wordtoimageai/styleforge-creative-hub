@@ -20,10 +20,14 @@ const DEFAULT_COLORS: BrandColors = {
 
 let cachedConfig: BrandConfig | null = null;
 
+export function getConfiguredBrandId(): string {
+  return import.meta.env.VITE_BRAND_ID || 'demo';
+}
+
 export async function loadBrandConfig(): Promise<BrandConfig> {
   if (cachedConfig) return cachedConfig;
 
-  const brandId = import.meta.env.VITE_BRAND_ID || 'demo';
+  const brandId = getConfiguredBrandId();
 
   try {
     // Dynamic import based on brand ID

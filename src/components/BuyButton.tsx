@@ -19,8 +19,6 @@ export default function BuyButton({ product, fullWidth }: Props) {
   const handleBuy = () => {
     trackEvent(config.brandId, 'conversion_click', {
       productId: product.id,
-      productName: product.name,
-      buyType: config.buyLinkType,
     });
 
     switch (config.buyLinkType) {

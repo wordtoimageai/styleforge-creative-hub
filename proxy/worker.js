@@ -1,6 +1,6 @@
 // ============================================
 // BDai.studio — Cloudflare Worker AI Proxy
-// Routes: /api/try-on, /api/usage/:brandId, /api/track, /api/verify
+// Routes: /api/try-on, /api/usage/:brandId, /api/track, /api/public-track, /api/verify
 // KV: BRAND_USAGE, BRAND_CONFIG
 // Secret: GEMINI_API_KEY
 // ============================================
@@ -13,6 +13,13 @@ const PLAN_LIMITS = {
   pro: 5000,
   enterprise: 20000,
 };
+
+const PUBLIC_TRACK_EVENTS = new Set([
+  'conversion_click',
+  'try_on',
+  'style_generation',
+  'model_generation',
+]);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,6 +43,9 @@ export default {
       }
       if (path.startsWith('/api/usage/') && request.method === 'GET') {
         return await handleUsage(path.split('/').pop(), env, request);
+      }
+      if (path === '/api/public-track' && request.method === 'POST') {
+        return await handlePublicTrack(request, env);
       }
       if (path === '/api/track' && request.method === 'POST') {
         return await handleTrack(request, env);
@@ -154,6 +164,43 @@ async function handleUsage(brandId, env, request) {
   const plan = brandConfig.plan || 'starter';
   const limit = PLAN_LIMITS[plan] || 300;
   return json({ used: currentUsage, limit, remaining: Math.max(0, limit - currentUsage), plan });
+}
+
+async function handlePublicTrack(request, env) {
+  let body;
+  try {
+    const rawBody = await request.text();
+    if (rawBody.length > 2048) return json({ error: 'Request too large' }, 413);
+    body = JSON.parse(rawBody);
+  } catch {
+    return json({ error: 'Invalid request body' }, 400);
+  }
+
+  const { brandId, event, productId } = body || {};
+  if (typeof brandId !== 'string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(brandId)) {
+    return json({ error: 'Invalid brand' }, 400);
+  }
+  if (typeof event !== 'string' || !PUBLIC_TRACK_EVENTS.has(event)) {
+    return json({ error: 'Unsupported tracking event' }, 400);
+  }
+  if (productId !== undefined && (typeof productId !== 'string' || productId.length > 128)) {
+    return json({ error: 'Invalid product' }, 400);
+  }
+
+  const brandConfig = JSON.parse((await env.BRAND_CONFIG.get(`config:${brandId}`)) || '{}');
+  const brandKey = brandConfig.api_key || brandConfig.apiKey;
+  if (!brandKey) return json({ error: 'Brand not found' }, 404);
+
+  // Relay through the authenticated handler using the server-held brand key.
+  const relayedRequest = new Request(request.url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${brandKey}`,
+    },
+    body: JSON.stringify({ brandId, event, ...(productId ? { productId } : {}) }),
+  });
+  return await handleTrack(relayedRequest, env);
 }
 
 async function handleTrack(request, env) {
