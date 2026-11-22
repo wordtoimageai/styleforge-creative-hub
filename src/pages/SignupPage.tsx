@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,16 @@ import { Loader2 } from "lucide-react";
 
 export default function SignupPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const requestedNext = searchParams.get("next");
+  const returnTo = requestedNext === "/processing" || requestedNext === "/studio"
+    ? requestedNext
+    : "/dashboard";
+  const signInPath = returnTo === "/dashboard"
+    ? "/login"
+    : `/login?next=${encodeURIComponent(returnTo)}&reason=generation`;
   const [form, setForm] = useState({
     businessName: "",
     subdomain: "",
@@ -59,7 +67,8 @@ export default function SignupPage() {
       }
 
       toast({ title: "Account created! Check your email to verify." });
-      navigate("/dashboard");
+      if (authData.session) navigate(returnTo, { replace: true });
+      else navigate(signInPath, { replace: true });
     } catch (err: any) {
       toast({ title: err.message || "Signup failed", variant: "destructive" });
     } finally {
@@ -130,7 +139,7 @@ export default function SignupPage() {
 
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="text-primary hover:underline">Sign in</Link>
+            <Link to={signInPath} className="text-primary hover:underline">Sign in</Link>
           </p>
         </form>
       </div>

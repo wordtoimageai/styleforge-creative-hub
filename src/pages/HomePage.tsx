@@ -309,7 +309,7 @@ const HomePage = ({ lang, onSelectMode }: HomePageProps) => {
               <p className={`mt-5 text-base md:text-lg text-[hsl(var(--m-ink-soft))] max-w-lg ${bengali}`}>
                 {bn
                   ? "একটি ছবি আপলোড করুন, একটি স্টাইল বেছে নিন এবং ৩০ সেকেন্ডের মধ্যে স্টুডিও-মানের ফল পান।"
-                  : "Upload a photo, pick a style, and get studio-quality results in under 30 seconds. No signup required to try."}
+                  : "Upload a photo, pick a style, and get studio-quality results in under 30 seconds. Sign in is required to generate."}
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 <button
@@ -329,8 +329,8 @@ const HomePage = ({ lang, onSelectMode }: HomePageProps) => {
               </div>
               <ul className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {(bn
-                  ? ["৩০ সেকেন্ডে রেজাল্ট", "সাইন আপ ছাড়াই", "প্রাইভেসি ফার্স্ট"]
-                  : ["~30s results", "No signup", "Privacy first"]
+                  ? ["৩০ সেকেন্ডে রেজাল্ট", "জেনারেট করতে সাইন ইন", "প্রাইভেসি ফার্স্ট"]
+                  : ["~30s results", "Sign in to generate", "Privacy first"]
                 ).map((item) => (
                   <li key={item} className={`flex items-center gap-2 text-sm text-[hsl(var(--m-ink-soft))] ${bengali}`}>
                     <Check className="h-4 w-4 text-[hsl(var(--m-emerald))]" />
@@ -414,8 +414,8 @@ const HomePage = ({ lang, onSelectMode }: HomePageProps) => {
               </p>
               <ul className="mt-8 space-y-3">
                 {(bn
-                  ? ["~৩০ সেকেন্ডে ফল", "সাইন-আপ ছাড়াই", "ব্যক্তিগত ও নিরাপদ"]
-                  : ["~30s results", "No signup required", "Private & secure"]
+                  ? ["~৩০ সেকেন্ডে ফল", "জেনারেট করতে সাইন ইন", "ব্যক্তিগত ও নিরাপদ"]
+                  : ["~30s results", "Sign in to generate", "Private & secure"]
                 ).map((item) => (
                   <li key={item} className={`flex items-center gap-3 text-sm text-[hsl(var(--m-ink-soft))] ${bengali}`}>
                     <Check className="h-4 w-4 text-[hsl(var(--m-emerald))]" />

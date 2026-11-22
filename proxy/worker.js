@@ -14,6 +14,20 @@ const PLAN_LIMITS = {
   enterprise: 20000,
 };
 
+const TRY_ON_PROMPTS = Object.freeze({
+  default: 'Dress the person in the first image in the garment from the second image. Preserve the person’s face, skin tone, body proportions, and pose. Show realistic fabric texture and natural garment fit.',
+  panjabi: 'Dress the person in the first image in the Panjabi from the second image. Show its traditional collar, buttons, natural drape, and realistic fabric texture. Preserve the person’s face, skin tone, proportions, and pose.',
+  'panjabi-pajama-set': 'Dress the person in the first image in the Panjabi-pajama set from the second image. Show the matching pieces and natural fabric drape. Preserve the person’s face, skin tone, proportions, and pose.',
+  saree: 'Dress the person in the first image in the Saree from the second image, using a traditional Bengali drape with visible pleats and pallu. Preserve the person’s face, skin tone, proportions, and pose.',
+  'shalwar-kameez': 'Dress the person in the first image in the Shalwar Kameez from the second image. Show natural fit, neckline, sleeves, and drape. Preserve the person’s face, skin tone, proportions, and pose.',
+  fatua: 'Dress the person in the first image in the Fatua from the second image. Show its natural hip-length fit and fabric details. Preserve the person’s face, skin tone, proportions, and pose.',
+  kurta: 'Dress the person in the first image in the Kurta from the second image. Show natural shoulder fit and drape. Preserve the person’s face, skin tone, proportions, and pose.',
+  shirt: 'Dress the person in the first image in the shirt from the second image. Show natural collar, buttons, and sleeve details. Preserve the person’s face, skin tone, proportions, and pose.',
+  coaty: 'Layer the Coaty from the second image over the person’s outfit. Show a natural shoulder fit and button details. Preserve the person’s face, skin tone, proportions, and pose.',
+  lehenga: 'Dress the person in the first image in the Lehenga set from the second image. Show the skirt, blouse, and dupatta as pictured. Preserve the person’s face, skin tone, proportions, and pose.',
+  'eid-collection': 'Dress the person in the first image in the festive outfit from the second image. Show its fabric and embellishment details naturally. Preserve the person’s face, skin tone, proportions, and pose.',
+});
+
 const PUBLIC_TRACK_EVENTS = new Set([
   'conversion_click',
   'try_on',
@@ -66,7 +80,7 @@ export default {
 
 async function handleTryOn(request, env) {
   const body = await request.json();
-  const { brandId, userImage, productImage, prompt } = body;
+  const { brandId, userImage, productImage, productCategory } = body;
 
   if (!brandId || !userImage || !productImage) {
     return json({ error: 'Missing: brandId, userImage, productImage' }, 400);
@@ -92,8 +106,11 @@ async function handleTryOn(request, env) {
     }, 429);
   }
 
-  // Build Gemini request
-  const geminiPrompt = prompt || 'Show this person wearing this clothing item naturally. Keep face unchanged.';
+  // Only server-owned category prompts are sent to the model.
+  const category = typeof productCategory === 'string' ? productCategory : '';
+  const geminiPrompt = Object.prototype.hasOwnProperty.call(TRY_ON_PROMPTS, category)
+    ? TRY_ON_PROMPTS[category]
+    : TRY_ON_PROMPTS.default;
 
   const geminiBody = {
     contents: [{

@@ -32,6 +32,11 @@ export default function ProcessingPage({ lang, userPhoto, onGenerated, onError }
 
         if (cancelled) return;
 
+        if (result.requiresSignIn) {
+          navigate("/login?next=%2Fprocessing&reason=generation");
+          return;
+        }
+
         if (result.error) {
           onError(result.error);
           navigate("/upload");

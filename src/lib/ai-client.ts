@@ -14,6 +14,7 @@ interface GenerateRequest {
 interface GenerateResponse {
   image: string; // base64 data URL
   error?: string;
+  requiresSignIn?: boolean;
 }
 
 const GENERATION_EVENTS: Record<GenerationMode, TrackingEvent> = {
@@ -43,10 +44,14 @@ export async function generateImage(req: GenerateRequest): Promise<GenerateRespo
     });
 
     if (error) {
+      const status = (error as { context?: { status?: number } })?.context?.status;
+      if (status === 401) {
+        return { image: "", error: "Sign in to generate images.", requiresSignIn: true };
+      }
+
       const message = await readErrorMessage(error);
       if (message) return { image: "", error: message };
 
-      const status = (error as { context?: { status?: number } })?.context?.status;
       if (status === 429) {
         return { image: "", error: "Too many requests right now. Wait a moment and try again." };
       }

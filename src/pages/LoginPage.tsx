@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,10 +9,27 @@ import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const requestedNext = searchParams.get("next");
+  const returnTo = requestedNext === "/processing" || requestedNext === "/studio"
+    ? requestedNext
+    : "/dashboard";
+  const isGeneratingFlow = searchParams.get("reason") === "generation" && returnTo !== "/dashboard";
+
+  useEffect(() => {
+    if (!isGeneratingFlow) return;
+    let active = true;
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (active && !error && data.user && data.user.is_anonymous !== true) {
+        navigate(returnTo, { replace: true });
+      }
+    });
+    return () => { active = false; };
+  }, [isGeneratingFlow, navigate, returnTo]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +37,7 @@ export default function LoginPage() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate("/dashboard");
+      navigate(returnTo, { replace: true });
     } catch (err: any) {
       toast({ title: err.message || "Login failed", variant: "destructive" });
     } finally {
@@ -39,7 +56,9 @@ export default function LoginPage() {
             <span className="font-heading text-xl font-bold">BDai.studio</span>
           </div>
           <h1 className="text-2xl font-heading font-bold">Welcome back</h1>
-          <p className="text-sm text-muted-foreground mt-1">Sign in to your dashboard</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {isGeneratingFlow ? "Sign in to continue generating your look." : "Sign in to your dashboard"}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="glass-card p-6 space-y-4">
@@ -57,7 +76,10 @@ export default function LoginPage() {
           </Button>
           <p className="text-center text-sm text-muted-foreground">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-primary hover:underline">Sign up</Link>
+            <Link
+              to={returnTo === "/dashboard" ? "/signup" : `/signup?next=${encodeURIComponent(returnTo)}&reason=generation`}
+              className="text-primary hover:underline"
+            >Sign up</Link>
           </p>
         </form>
       </div>

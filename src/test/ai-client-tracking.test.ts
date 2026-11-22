@@ -41,4 +41,17 @@ describe("image generation tracking", () => {
 
     expect(mocks.trackEvent).not.toHaveBeenCalled();
   });
+
+  it("requires sign-in when the generation service rejects an unauthenticated request", async () => {
+    mocks.invoke.mockResolvedValue({
+      data: null,
+      error: { message: "Unauthorized", context: { status: 401 } },
+    });
+
+    const result = await generateImage({ mode: "model", userPhoto: "data:image/png;base64,photo" });
+
+    expect(result.requiresSignIn).toBe(true);
+    expect(result.error).toBe("Sign in to generate images.");
+    expect(mocks.trackEvent).not.toHaveBeenCalled();
+  });
 });

@@ -127,11 +127,7 @@ export interface ProxyRequest {
   brandId: string;
   userImage: string;
   productImage: string;
-  prompt: string;
   productCategory?: string;
-  productName?: string;
-  productColor?: string;
-  productFabric?: string;
 }
 
 export interface ProxyResponse {

@@ -69,7 +69,8 @@ export default function StudioPage({
     const cleanup = startProcessing();
     try {
       const result = await generateImage({ mode: "style", userPhoto, stylePreset: styleKey });
-      if (result.error) toast.error(result.error);
+      if (result.requiresSignIn) navigate("/login?next=%2Fstudio&reason=generation");
+      else if (result.error) toast.error(result.error);
       else { onGenerated(result.image); onAddHistory(result.image); }
     } catch { toast.error("Failed to generate style"); }
     finally { cleanup(); setProcessing(false); }
@@ -80,7 +81,8 @@ export default function StudioPage({
     const cleanup = startProcessing();
     try {
       const result = await generateImage({ mode: "tryon", userPhoto, garmentPhoto: garmentBase64 });
-      if (result.error) toast.error(result.error);
+      if (result.requiresSignIn) navigate("/login?next=%2Fstudio&reason=generation");
+      else if (result.error) toast.error(result.error);
       else {
         onGenerated(result.image);
         onAddHistory(result.image);

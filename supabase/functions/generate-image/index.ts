@@ -1,9 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 // Primary + fallback image models (both support image output on the gateway).
 const MODELS = ["google/gemini-3.1-flash-image", "google/gemini-2.5-flash-image"];
@@ -38,9 +35,31 @@ function isValidImage(src: unknown): src is string {
   return typeof src === "string" && (src.startsWith("data:image/") || src.startsWith("http"));
 }
 
+async function hasSignedInUser(req: Request): Promise<boolean> {
+  const authorization = req.headers.get("Authorization") ?? "";
+  const token = authorization.match(/^Bearer\s+(.+)$/i)?.[1];
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!token || !supabaseUrl || !anonKey) return false;
+
+  try {
+    const authClient = createClient(supabaseUrl, anonKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+    const { data, error } = await authClient.auth.getUser(token);
+    return !error && !!data.user && data.user.is_anonymous !== true;
+  } catch {
+    return false;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  if (!(await hasSignedInUser(req))) {
+    return jsonResponse({ error: "Please sign in to generate a look." }, 401);
   }
 
   try {
