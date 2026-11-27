@@ -189,7 +189,10 @@ export default function WardrobeSheet({
               {t(lang, "studio.wardrobe")}
               <Badge variant="secondary" className="text-[10px] ml-1">{regularItems.length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="upload">📤 {t(lang, "studio.uploadGarment")}</TabsTrigger>
+            <TabsTrigger value="upload" className="gap-1.5">
+              <Upload className="h-4 w-4" />
+              {t(lang, "studio.uploadGarment")}
+            </TabsTrigger>
           </TabsList>
 
           <div className="flex-1 overflow-y-auto mt-4">
@@ -275,6 +278,9 @@ export default function WardrobeSheet({
                 <label className="w-48 h-48 border-2 border-dashed border-border/50 rounded-2xl flex flex-col items-center justify-center text-muted-foreground cursor-pointer hover:border-primary/50 hover:text-primary transition-colors">
                   <Upload className="h-10 w-10 mb-2" />
                   <span className="text-sm font-semibold">{t(lang, "studio.uploadGarment")}</span>
+                  <span className="text-xs mt-1 text-center px-4">
+                    {t(lang, "studio.uploadGarmentHint")}
+                  </span>
                   <span className="text-[10px] mt-1 text-center px-4">
                     PNG or JPEG · Transparent bg preferred
                   </span>
