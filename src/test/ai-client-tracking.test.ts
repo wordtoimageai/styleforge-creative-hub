@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  getSession: vi.fn(),
   invoke: vi.fn(),
   trackEvent: vi.fn(),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: { functions: { invoke: mocks.invoke } },
+  supabase: { auth: { getSession: mocks.getSession }, functions: { invoke: mocks.invoke } },
 }));
 
 vi.mock("@/services/geminiService", () => ({
@@ -17,6 +18,11 @@ import { generateImage } from "@/lib/ai-client";
 
 describe("image generation tracking", () => {
   beforeEach(() => {
+    mocks.getSession.mockReset();
+    mocks.getSession.mockResolvedValue({
+      data: { session: { user: { id: "signed-in-user", is_anonymous: false } } },
+      error: null,
+    });
     mocks.invoke.mockReset();
     mocks.trackEvent.mockReset();
     mocks.trackEvent.mockResolvedValue(undefined);
@@ -53,5 +59,27 @@ describe("image generation tracking", () => {
     expect(result.requiresSignIn).toBe(true);
     expect(result.error).toBe("Sign in to generate images.");
     expect(mocks.trackEvent).not.toHaveBeenCalled();
+  });
+
+  it("redirects unsigned users before calling the generation service", async () => {
+    mocks.getSession.mockResolvedValue({ data: { session: null }, error: null });
+
+    const result = await generateImage({ mode: "model", userPhoto: "data:image/png;base64,photo" });
+
+    expect(result.requiresSignIn).toBe(true);
+    expect(result.error).toBe("Sign in to generate images.");
+    expect(mocks.invoke).not.toHaveBeenCalled();
+  });
+
+  it("does not allow anonymous sessions to call the generation service", async () => {
+    mocks.getSession.mockResolvedValue({
+      data: { session: { user: { id: "anonymous-user", is_anonymous: true } } },
+      error: null,
+    });
+
+    const result = await generateImage({ mode: "model", userPhoto: "data:image/png;base64,photo" });
+
+    expect(result.requiresSignIn).toBe(true);
+    expect(mocks.invoke).not.toHaveBeenCalled();
   });
 });

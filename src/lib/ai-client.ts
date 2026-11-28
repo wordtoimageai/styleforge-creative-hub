@@ -39,6 +39,14 @@ async function readErrorMessage(error: unknown): Promise<string | null> {
 
 export async function generateImage(req: GenerateRequest): Promise<GenerateResponse> {
   try {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      return { image: "", error: "Could not verify your sign-in. Please try again." };
+    }
+    if (!session?.user || session.user.is_anonymous === true) {
+      return { image: "", error: "Sign in to generate images.", requiresSignIn: true };
+    }
+
     const { data, error } = await supabase.functions.invoke("generate-image", {
       body: req,
     });
